@@ -80,6 +80,11 @@ button {
   flex-direction:column;
   gap:8px;
   margin-top:6px;
+
+  #metres {
+  max-width: 100%;
+}
+  
 }
 
 .grid {
@@ -148,7 +153,7 @@ button {
 
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.29)
+      Pack Visualiser (v3.3)
     </h3>
   </div>
 
@@ -192,10 +197,8 @@ button {
   </div>
 
   <div id="step5_rejects" class="step hidden">
-    <label>Rejects</label>
-    <input id="rejects" type="number" />
-  </div>
-
+  <input id="rejects" type="number" placeholder="How many Rejects?" />
+</div>
   <div class="btnRow">
     <button id="nextBtn" onclick="nextStep()">Next</button>
     <button id="backBtn" onclick="prevStep()">Back</button>
