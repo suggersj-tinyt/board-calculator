@@ -28,26 +28,35 @@
 
   .cell {
     font-variant-numeric: tabular-nums;
-    flex:1;
-    aspect-ratio:3/1;
-    border:1px solid rgba(0,0,0,0.15);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    border-radius:3px;
-    background:#8b5a2b;
-    color:#fff;
+    flex: 1;
+    min-width: 40px;
+    max-width: 70px;
+    aspect-ratio: 3/1;
+    border: 1px solid rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    border-radius: 3px;
+    background: #8b5a2b;
+    color: #fff;
   }
 
   .reject { background:#f4a300 !important; }
   .loose .cell { background:#a06a3a; }
 
   .empty {
-    flex:1;
-    aspect-ratio:3/1;
-    border:1px dashed rgba(0,0,0,0.1);
+    flex: 1;
+    min-width: 40px;
+    max-width: 70px;
+    aspect-ratio: 3/1;
+    border: 1px dashed rgba(0,0,0,0.1);
   }
+
+  .ghost .cell {
+    opacity: 0.12;
+    background: rgba(139, 90, 43, 0.15);
+}
 
   .rowNum {
     font-size:11px;
@@ -61,7 +70,7 @@
 <body>
 
 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-  <h3 style="margin:0;">Board Calculator</h3>
+  <h3 style="margin:0;">The Moulder Master Visualiser</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" alt="Logo" style="height:28px; width:auto; object-fit:contain;" />
 </div>
 
@@ -243,6 +252,36 @@ function updateLooseOptions(){
   }
 }
 
+function renderGhost(s){
+  clearGrid();
+
+  const rows = 10;
+  const per = s.perRow;
+
+  const grid = document.getElementById('grid');
+
+  for (let r = 0; r < rows; r++){
+    const row = document.createElement('div');
+    row.className = 'row ghost';
+
+    for (let c = 0; c < per; c++){
+      const d = document.createElement('div');
+      // Use EMPTY STYLE to match real layout structure
+      d.className = 'empty';
+      row.appendChild(d);
+    }
+
+    const rn = document.createElement('div');
+    rn.className = 'rowNum';
+    rn.innerText = r + 1;
+    row.appendChild(rn);
+
+    grid.appendChild(row);
+  }
+
+  document.getElementById('summary').innerText='';
+}
+
 function updateUI(){
   document.getElementById('boardsWrap').classList.toggle('hidden',modeSel.value!=='boards');
   document.getElementById('linearWrap').classList.toggle('hidden',modeSel.value!=='linear');
@@ -272,7 +311,15 @@ function clearGrid(){
 
 function render(){
   const s=state();
-  if(!isReadyToRender(s)) return;
+
+  if(!isReadyToRender(s)){
+    if(s.perRow>0){
+      renderGhost(s);
+    } else {
+      clearGrid();
+    }
+    return;
+  }
 
   clearGrid();
 
