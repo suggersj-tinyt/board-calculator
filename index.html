@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Board Calculator</title>
+
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#4caf50">
+
+<style>
+  body { font-family: Arial, sans-serif; margin: 12px; background:#fff; }
+
+  .panel { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:10px; }
+
+  label { font-size:12px; }
+
+  input, select { width:100%; padding:10px; font-size:16px; }
+
+  .hidden { display:none; }
+
+  button { padding:14px; width:100%; margin-top:8px; font-size:16px; }
+
+  .grid { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+
+  .row { display:flex; gap:4px; align-items:center; width:100%; }
+
+  .row.loose { margin-bottom:12px; }
+
+  .cell {
+    flex:1;
+    aspect-ratio:3/1;
+    border:1px solid rgba(0,0,0,0.15);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    border-radius:3px;
+    background:#8b5a2b;
+    color:#fff;
+  }
+
+  .reject { background:#f4a300 !important; }
+
+  .loose .cell {
+    background:#a06a3a;
+  }
+
+  .empty {
+    flex:1;
+    aspect-ratio:3/1;
+    border:1px dashed rgba(0,0,0,0.1);
+  }
+
+  .rowNum {
+    font-size:11px;
+    color:#666;
+    padding-left:8px;
+    min-width:20px;
+  }
+</style>
+</head>
+
+<body>
+
+<h3>Board Calculator</h3>
+
+<div class="panel">
+  <label>Mode</label>
+  <select id="mode"></select>
+
+  <div id="boardsWrap">
+    <label>Boards</label>
+    <input id="boards" type="number" />
+  </div>
+
+  <div id="linearWrap">
+    <label>Metres</label>
+    <input id="metres" type="number" />
+
+    <label>Board Length (m)</label>
+    <select id="boardLength"></select>
+  </div>
+
+  <label>Boards per row (max 15)</label>
+  <select id="perRow"></select>
+
+  <label>Yield</label>
+  <select id="yield"></select>
+
+  <label>Loose boards (top row)</label>
+  <select id="topLoose"></select>
+
+  <label>Rejects</label>
+  <input id="rejects" type="number" />
+
+  <button onclick="resetAll()">Reset</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<script>
+const BOARD_LENGTHS = [2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
+
+const modeSel = document.getElementById('mode');
+['Boards','Linear'].forEach(v => {
+  const o = document.createElement('option');
+  o.value = v.toLowerCase();
+  o.textContent = v;
+  modeSel.appendChild(o);
+});
+modeSel.value = 'boards';
+
+const bl = document.getElementById('boardLength');
+BOARD_LENGTHS.forEach(v => {
+  const o = document.createElement('option');
+  o.value = v;
+  o.textContent = v;
+  bl.appendChild(o);
+});
+
+const yieldSel = document.getElementById('yield');
+for(let i=1;i<=6;i++){
+  const o=document.createElement('option');
+  o.value=i;
+  o.textContent=i;
+  yieldSel.appendChild(o);
+}
+yieldSel.value=1;
+
+const perRowSel = document.getElementById('perRow');
+function buildPerRow(){
+  perRowSel.innerHTML='';
+  for(let i=1;i<=15;i++){
+    const o=document.createElement('option');
+    o.value=i;
+    o.textContent=i;
+    perRowSel.appendChild(o);
+  }
+  perRowSel.value=7;
+}
+buildPerRow();
+
+const looseSel = document.getElementById('topLoose');
+function buildLoose(){
+  const perRow = parseInt(perRowSel.value||0);
+  const max = Math.max(0, perRow - 1);
+  const prev = parseInt(looseSel.value||0);
+
+  looseSel.innerHTML='';
+  for(let i=0;i<=max;i++){
+    const o=document.createElement('option');
+    o.value=i;
+    o.textContent=i;
+    looseSel.appendChild(o);
+  }
+  looseSel.value = Math.min(prev, max);
+}
+buildLoose();
+
+function state(){
+  return {
+    mode: modeSel.value,
+    boards:+document.getElementById('boards').value||0,
+    metres:+document.getElementById('metres').value||0,
+    boardLength:+document.getElementById('boardLength').value||0,
+    perRow:+perRowSel.value||0,
+    yield:+yieldSel.value||1,
+    topLoose:+looseSel.value||0,
+    rejects:+document.getElementById('rejects').value||0
+  };
+}
+
+function basePieces(s){
+  if(s.mode==='linear'){
+    if(!s.metres||!s.boardLength) return 0;
+    return Math.ceil(s.metres/s.boardLength);
+  }
+  return s.boards;
+}
+
+function render(){
+  const s = state();
+  const base = basePieces(s);
+  if(!base||!s.perRow) return;
+
+  const total = base + s.rejects;
+  const phys = Math.ceil(total/s.yield);
+  const basePhys = Math.ceil(base/s.yield);
+
+  let rows = [];
+  let rem = phys;
+
+  if(s.topLoose){
+    const t = Math.min(s.topLoose, rem);
+    rows.push(t);
+    rem -= t;
+  }
+
+  while(rem>0){
+    const c = Math.min(s.perRow, rem);
+    rows.push(c);
+    rem -= c;
+  }
+
+  const grid = document.getElementById('grid');
+  grid.innerHTML='';
+
+  let count = 1;
+
+  rows.forEach((cap,r)=>{
+    const row = document.createElement('div');
+    row.className = 'row' + (r===0 ? ' loose' : '');
+
+    let cells = [];
+
+    for(let c=0;c<s.perRow;c++){
+      const d = document.createElement('div');
+      const ok = c<cap && count<=phys;
+
+      if(ok){
+        d.className = 'cell' + (count>basePhys ? ' reject' : '');
+        d.innerText = count++;
+      } else {
+        d.className = 'empty';
+      }
+      cells.push(d);
+    }
+
+    if(r===rows.length-1) cells.reverse();
+
+    cells.forEach(x=>row.appendChild(x));
+    grid.appendChild(row);
+  });
+}
+
+function resetAll(){
+  document.querySelectorAll('input').forEach(i=>i.value='');
+  yieldSel.value=1;
+  perRowSel.value=7;
+  buildLoose();
+  render();
+}
+
+document.querySelectorAll('input, select').forEach(el=>{
+  el.addEventListener('input', ()=>{ buildLoose(); render(); });
+});
+
+modeSel.addEventListener('change', render);
+
+render();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js');
+}
+</script>
+
+</body>
+</html>
