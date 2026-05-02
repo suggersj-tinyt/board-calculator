@@ -55,6 +55,7 @@
     color:#666;
     padding-left:8px;
     min-width:20px;
+    text-align:left;
   }
 </style>
 </head>
@@ -95,10 +96,11 @@
   <button onclick="resetAll()">Reset</button>
 </div>
 
+<div id="summary" style="font-size:13px;margin-top:8px;color:#333;"></div>
 <div class="grid" id="grid"></div>
 
 <script>
-const BOARD_LENGTHS = [2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
+const BOARD_LENGTHS = ["Select",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
 
 const modeSel = document.getElementById('mode');
 ['Boards','Linear'].forEach(v => {
@@ -112,10 +114,11 @@ modeSel.value = 'boards';
 const bl = document.getElementById('boardLength');
 BOARD_LENGTHS.forEach(v => {
   const o = document.createElement('option');
-  o.value = v;
+  o.value = v === "Select" ? "" : v;
   o.textContent = v;
   bl.appendChild(o);
 });
+bl.value = ""; // default to Select
 
 const yieldSel = document.getElementById('yield');
 for(let i=1;i<=6;i++){
@@ -189,6 +192,7 @@ function render(){
 
   if(!base || !s.perRow){
     document.getElementById('grid').innerHTML = '';
+    document.getElementById('summary').innerHTML = '';
     return;
   }
 
@@ -210,6 +214,9 @@ function render(){
     rows.push(c);
     rem -= c;
   }
+
+  // NEW: summary (total rows + key info)
+  document.getElementById('summary').innerText = `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
 
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -238,14 +245,28 @@ function render(){
     if(r === rows.length - 1) cells.reverse();
 
     cells.forEach(x => row.appendChild(x));
+
+    // ADD ROW NUMBER ON RIGHT SIDE OF STACK
+    const rn = document.createElement('div');
+    rn.className = 'rowNum';
+    rn.innerText = r + 1;
+    row.appendChild(rn);
+
     grid.appendChild(row);
   });
 }
 
 function resetAll(){
-  document.querySelectorAll('input').forEach(i => i.value = '');
+  // clear all inputs
+  document.getElementById('boards').value = '';
+  document.getElementById('metres').value = '';
+  document.getElementById('rejects').value = '';
+
+  // reset selects (but KEEP mode)
   yieldSel.value = 1;
-  perRowSel.value = 7;
+  perRowSel.value = "";
+  bl.value = "";
+
   buildLoose();
   render();
 }
