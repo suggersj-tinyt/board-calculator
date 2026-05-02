@@ -28,6 +28,7 @@
   .row.loose { margin-bottom:12px; }
 
   .cell {
+    font-variant-numeric: tabular-nums;
     flex:1;
     aspect-ratio:3/1;
     border:1px solid rgba(0,0,0,0.15);
@@ -72,12 +73,12 @@
   <select id="mode"></select>
 
   <div id="boardsWrap">
-    <label>Number of Boards Required</label>
+    <label>Boards</label>
     <input id="boards" type="number" />
   </div>
 
   <div id="linearWrap">
-    <label>Linear Metres Required</label>
+    <label>Metres</label>
     <input id="metres" type="number" />
 
     <label>Board Length (m)</label>
@@ -87,7 +88,7 @@
   <label>Boards per row (max 15)</label>
   <select id="perRow"></select>
 
-  <label>Yield (if bandsawing)</label>
+  <label>Yield</label>
   <select id="yield"></select>
 
   <label>Loose boards (top row)</label>
