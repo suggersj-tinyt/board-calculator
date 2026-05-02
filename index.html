@@ -9,7 +9,11 @@
 <meta name="theme-color" content="#4caf50">
 
 <style>
-  body { font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif; margin: 12px; background:#fff; }
+  body {
+    font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+    margin: 12px;
+    background:#fff;
+  }
 
   .panel { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:10px; }
 
@@ -65,7 +69,7 @@
 
 <div style="display:flex; justify-content:space-between; align-items:center;">
   <h3 style="margin:0;">Board Calculator</h3>
-  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" alt="Logo" style="height:40px; object-fit:contain;" />
+  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" style="height:40px; object-fit:contain;" />
 </div>
 
 <div class="panel">
@@ -91,7 +95,7 @@
   <label>Yield</label>
   <select id="yield"></select>
 
-  <label>Loose boards (top row)</label>
+  <label>Loose boards</label>
   <select id="topLoose"></select>
 
   <label>Rejects</label>
@@ -122,7 +126,7 @@ BOARD_LENGTHS.forEach(v => {
   o.textContent = v;
   bl.appendChild(o);
 });
-bl.value = ""; // default to Select
+bl.value = "";
 
 const yieldSel = document.getElementById('yield');
 for(let i=1;i<=6;i++){
@@ -142,11 +146,12 @@ function buildPerRow(){
     o.textContent=i;
     perRowSel.appendChild(o);
   }
-  perRowSel.value=7;
+  perRowSel.value="";
 }
 buildPerRow();
 
 const looseSel = document.getElementById('topLoose');
+
 function buildLoose(){
   const perRow = parseInt(perRowSel.value||0);
   const max = Math.max(0, perRow - 1);
@@ -219,8 +224,8 @@ function render(){
     rem -= c;
   }
 
-  // NEW: summary (total rows + key info)
-  document.getElementById('summary').innerText = `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
+  document.getElementById('summary').innerText =
+    `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
 
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -246,14 +251,7 @@ function render(){
       cells.push(d);
     }
 
-    // CRITICAL FIX:
-    // Always fill the LAST ROW from right to left based on BASE, not total
-    const isLastRow = r === rows.length - 1;
-
-    if(isLastRow){
-      cells.reverse();
-    }
-
+    cells.reverse();
     cells.forEach(x => row.appendChild(x));
 
     const rn = document.createElement('div');
@@ -266,12 +264,10 @@ function render(){
 }
 
 function resetAll(){
-  // clear all inputs
   document.getElementById('boards').value = '';
   document.getElementById('metres').value = '';
   document.getElementById('rejects').value = '';
 
-  // reset selects (but KEEP mode)
   yieldSel.value = 1;
   perRowSel.value = "";
   bl.value = "";
