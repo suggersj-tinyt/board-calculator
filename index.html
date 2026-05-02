@@ -16,64 +16,35 @@
     overflow-x:hidden;
   }
 
-  .header {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
-    margin-bottom:14px;
-  }
-
-  /* CENTRED FORM COLUMN */
   .panel {
-    max-width:420px;
-    margin:0 auto 10px auto;
     display:grid;
+    grid-template-columns:1fr;
     gap:8px;
+    margin-bottom:10px;
   }
 
-  .panel input,
-  .panel select {
+  input, select {
     width:100%;
-    max-width:260px;
     padding:10px;
     font-size:16px;
     box-sizing:border-box;
   }
 
-  #boardsWrap {
-    display:flex;
-    justify-content:flex-start;
-  }
-
   .hidden { display:none !important; }
 
-  /* BUTTONS */
-  .btnRow {
-    display:flex;
-    flex-direction:column;
-    gap:4px;
+  button {
+    padding:12px;
+    width:100%;
+    font-size:16px;
     margin-top:6px;
   }
 
-  button {
-    padding:9px 12px;
-    width:100%;
-    max-width:260px;
-    margin:0 auto;
-    font-size:16px;
-    line-height:1.15;
-
-    border-radius:6px;
-    border:1px solid rgba(0,0,0,0.15);
-
-    -webkit-appearance:none;
-    appearance:none;
+  .btnRow {
+    display:flex;
+    flex-direction:column;
+    gap:6px;
   }
 
-  button:active { transform:scale(0.99); }
-
-  /* GRID FULL WIDTH */
   .grid {
     display:flex;
     flex-direction:column;
@@ -87,8 +58,6 @@
     gap:4px;
     width:100%;
   }
-
-  .row.loose { margin-bottom:12px; }
 
   .cell, .empty {
     flex:1;
@@ -117,17 +86,12 @@
     font-size:11px;
     color:#666;
     padding-left:8px;
+    min-width:20px;
   }
 </style>
 </head>
 
 <body>
-
-<div class="header">
-  <h3 style="margin:0;">The Moulder Master Visualiser (v3.2)</h3>
-  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
-       style="height:28px;width:auto;" />
-</div>
 
 <div class="panel">
 
@@ -135,16 +99,9 @@
   <select id="mode"></select>
 
   <div id="step1">
-
-    <div id="boardsWrap">
-      <input id="boards" type="number" placeholder="Quantity of Boards Required" />
-    </div>
-
-    <div id="linearWrap">
-      <input id="metres" type="number" placeholder="Number of Linear Metres Required" />
-      <select id="boardLength"></select>
-    </div>
-
+    <input id="boards" type="number" placeholder="Quantity of Boards Required" />
+    <input id="metres" type="number" placeholder="Number of Linear Metres Required" />
+    <select id="boardLength"></select>
   </div>
 
   <div id="step2">
@@ -152,7 +109,7 @@
   </div>
 
   <div id="step3">
-    <label>Yield (when bandsawing)</label>
+    <label>Yield</label>
     <select id="yield"></select>
   </div>
 
@@ -179,21 +136,6 @@
 <script>
 let step = 1;
 
-/* ---------------- STATE ---------------- */
-
-function state(){
-  return {
-    mode: mode.value,
-    boards: +boards.value || 0,
-    metres: +metres.value || 0,
-    boardLength: +boardLength.value || 0,
-    perRow: +perRow.value || 0,
-    yield: +yield.value || 1,
-    topLoose: topLoose.value === '' ? null : +topLoose.value,
-    rejects: +rejects.value || 0
-  };
-}
-
 /* ---------------- INIT ---------------- */
 
 const mode = document.getElementById('mode');
@@ -201,7 +143,7 @@ const boards = document.getElementById('boards');
 const metres = document.getElementById('metres');
 const boardLength = document.getElementById('boardLength');
 const perRow = document.getElementById('perRow');
-const yield = document.getElementById('yield');
+const yieldSel = document.getElementById('yield');
 const topLoose = document.getElementById('topLoose');
 const rejects = document.getElementById('rejects');
 
@@ -224,8 +166,9 @@ for(let i=1;i<=6;i++){
   const o=document.createElement('option');
   o.value=i;
   o.textContent=i;
-  yield.appendChild(o);
+  yieldSel.appendChild(o);
 }
+yieldSel.value=1;
 
 function buildPerRow(){
   perRow.innerHTML='';
@@ -238,65 +181,48 @@ function buildPerRow(){
 }
 buildPerRow();
 
-/* ---------------- LOGIC ---------------- */
+/* ---------------- STATE ---------------- */
+
+function state(){
+  return {
+    mode: mode.value,
+    boards: +boards.value || 0,
+    metres: +metres.value || 0,
+    boardLength: +boardLength.value || 0,
+    perRow: +perRow.value || 0,
+    yield: +yieldSel.value || 1,
+    topLoose: topLoose.value === '' ? null : +topLoose.value,
+    rejects: +rejects.value || 0
+  };
+}
 
 function basePieces(s){
   if(s.mode==='linear'){
-    if(!s.metres||!s.boardLength) return 0;
-    return Math.ceil(s.metres/s.boardLength);
+    if(!s.metres || !s.boardLength) return 0;
+    return Math.ceil(s.metres / s.boardLength);
   }
   return s.boards;
 }
 
-function canProceed(){
-  const s = state();
+/* ---------------- FIXED LOOSE OPTIONS (KEY FIX) ---------------- */
 
-  if(step===1){
-    return s.mode==='boards' ? s.boards>0 : (s.metres>0 && s.boardLength>0);
-  }
-  if(step===2) return s.perRow>0;
-  if(step===4) return s.topLoose!==null;
-
-  return true;
-}
-
-/* ---------------- UI SYNC (KEY FIX) ---------------- */
-
-function syncUI(){
-  step1.classList.toggle('hidden', step !== 1);
-  step2.classList.toggle('hidden', step !== 2);
-  step3.classList.toggle('hidden', step !== 3);
-  step4.classList.toggle('hidden', step !== 4);
-  step5.classList.toggle('hidden', step !== 5);
-
-  nextBtn.disabled = !canProceed();
-  nextBtn.classList.toggle('hidden', step >= 5);
-  backBtn.classList.toggle('hidden', step <= 1);
-
-  boardsWrap.classList.toggle('hidden', mode.value !== 'boards');
-  linearWrap.classList.toggle('hidden', mode.value !== 'linear');
-
-  syncLooseOptions();
-}
-
-/* ---------------- SAFE LOOSE OPTIONS ---------------- */
-
-function syncLooseOptions(){
+function updateLooseOptions(){
   const s = state();
   const base = basePieces(s);
 
-  if(!s.perRow || !base) return;
+  // IMPORTANT: do NOT block rebuild incorrectly
+  if(!s.perRow || base === 0) return;
 
   const max = Math.max(0, s.perRow - 1);
-  const prev = +topLoose.value;
+  const prev = parseInt(topLoose.value);
 
   topLoose.innerHTML = '';
 
   const ph = document.createElement('option');
   ph.value='';
   ph.textContent='How many loose boards?';
-  ph.selected=true;
   ph.disabled=true;
+  ph.selected=true;
   topLoose.appendChild(ph);
 
   for(let i=0;i<=max;i++){
@@ -306,10 +232,29 @@ function syncLooseOptions(){
     topLoose.appendChild(o);
   }
 
-  topLoose.value = (prev<=max ? prev : '');
+  if(Number.isFinite(prev) && prev<=max){
+    topLoose.value = String(prev);
+  } else {
+    topLoose.value = '';
+  }
 }
 
 /* ---------------- NAV ---------------- */
+
+function canProceed(){
+  const s = state();
+
+  if(step===1){
+    return s.mode==='boards'
+      ? s.boards>0
+      : (s.metres>0 && s.boardLength>0);
+  }
+
+  if(step===2) return s.perRow>0;
+  if(step===4) return s.topLoose!==null;
+
+  return true;
+}
 
 function nextStep(){
   if(!canProceed()) return;
@@ -322,6 +267,22 @@ function prevStep(){
   step--;
   syncUI();
   render();
+}
+
+/* ---------------- UI ---------------- */
+
+function syncUI(){
+  step1.classList.toggle('hidden', step!==1);
+  step2.classList.toggle('hidden', step!==2);
+  step3.classList.toggle('hidden', step!==3);
+  step4.classList.toggle('hidden', step!==4);
+  step5.classList.toggle('hidden', step!==5);
+
+  nextBtn.disabled = !canProceed();
+  backBtn.classList.toggle('hidden', step<=1);
+  nextBtn.classList.toggle('hidden', step>=5);
+
+  updateLooseOptions();
 }
 
 /* ---------------- RENDER ---------------- */
@@ -347,7 +308,7 @@ function render(){
   rem -= rows[0];
 
   while(rem>0){
-    const c=Math.min(s.perRow,rem);
+    const c=Math.min(s.perRow, rem);
     rows.push(c);
     rem-=c;
   }
@@ -356,7 +317,7 @@ function render(){
 
   rows.forEach((cap,r)=>{
     const row=document.createElement('div');
-    row.className='row'+(r===0?' loose':'');
+    row.className='row';
 
     for(let c=0;c<s.perRow;c++){
       const d=document.createElement('div');
@@ -378,12 +339,34 @@ function render(){
     `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
 }
 
+/* ---------------- RESET (FIXED) ---------------- */
+
+function resetAll(){
+  step=1;
+
+  boards.value='';
+  metres.value='';
+  boardLength.value='';
+  perRow.value='';
+  topLoose.value='';
+  rejects.value='';
+  mode.value='boards';
+  yieldSel.value=1;
+
+  syncUI();
+  clear();
+}
+
 /* ---------------- EVENTS ---------------- */
 
 document.querySelectorAll('input,select')
   .forEach(el=>el.addEventListener('input',()=>{syncUI();render();}));
 
-mode.addEventListener('change',()=>{step=1;syncUI();render();});
+mode.addEventListener('change',()=>{
+  step=1;
+  syncUI();
+  render();
+});
 
 syncUI();
 render();
