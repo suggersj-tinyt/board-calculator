@@ -157,7 +157,7 @@ button {
 
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.31)
+      Pack Visualiser (v3.32)
     </h3>
   </div>
 
@@ -171,7 +171,7 @@ button {
 
 <div class="panel">
 
-  <label>I am measuring:</label>
+  <label>Target Total is measured in:</label>
   <select id="mode"></select>
 
   <div id="step1_boards" class="step">
@@ -192,7 +192,7 @@ button {
   </div>
 
   <div id="step3_yield" class="step hidden yieldField">
-  <label for="yield">Yield (when bandsawing)</label>
+  <label for="yield">Board Yield (use when bandsawing)</label>
   <select id="yield"></select>
 </div>
 
@@ -338,7 +338,7 @@ function updateLooseOptions(){
 
   const ph=document.createElement('option');
   ph.value='';
-  ph.textContent='How many loose boards?';
+  ph.textContent='How many loose boards on the pack?';
   ph.disabled=true;
   ph.selected=true;
   sel.appendChild(ph);
