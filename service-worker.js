@@ -1,4 +1,4 @@
-const CACHE_NAME = "board-calculator-v1";
+const CACHE_NAME = "board-calculator-v2";
 
 const ASSETS = [
   "./",
