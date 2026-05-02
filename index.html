@@ -74,6 +74,12 @@ button {
   aspect-ratio: 3/1;
   box-sizing: border-box;
 }
+  .yieldField {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start;
+  gap: 4px;
+}
 
 .cell {
   border: 1px solid rgba(0,0,0,0.15);
@@ -148,7 +154,7 @@ button {
     <select id="perRow"></select>
   </div>
 
-  <div id="step3_yield" class="step hidden" style="display:flex; flex-direction:column; gap:4px;">
+  <div id="step3_yield" class="step hidden yieldField">
   <label for="yield">Yield (when bandsawing)</label>
   <select id="yield"></select>
 </div>
