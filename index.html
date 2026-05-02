@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#4caf50">
 
 <style>
-  body { font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif; margin: 12px; background:#fff; }
+  body { font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif; margin: 12px; background:#fff; overflow-x:hidden; }
 
   .panel { display:grid; grid-template-columns:1fr; gap:8px; margin-bottom:10px; }
 
@@ -21,16 +21,17 @@
 
   .btnRow { display:flex; flex-direction:column; gap:8px; margin-top:6px; }
 
-  .grid { display:flex; flex-direction:column; gap:6px; margin-top:12px; }
+  .grid { display:flex; flex-direction:column; gap:6px; margin-top:12px; width:100%; max-width:100vw; }
 
   .row { display:flex; gap:4px; align-items:center; width:100%; }
   .row.loose { margin-bottom:12px; }
 
   .cell {
     font-variant-numeric: tabular-nums;
-    flex: 1;
-    min-width: 40px;
-    max-width: 70px;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
     aspect-ratio: 3/1;
     border: 1px solid rgba(0,0,0,0.15);
     display: flex;
@@ -40,15 +41,16 @@
     border-radius: 3px;
     background: #8b5a2b;
     color: #fff;
-  }
+  
 
   .reject { background:#f4a300 !important; }
   .loose .cell { background:#a06a3a; }
 
   .empty {
-    flex: 1;
-    min-width: 40px;
-    max-width: 70px;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    width: 100%;
     aspect-ratio: 3/1;
     border: 1px dashed rgba(0,0,0,0.1);
   }
@@ -70,7 +72,7 @@
 <body>
 
 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-  <h3 style="margin:0;">The Moulder Master Visualiser</h3>
+  <h3 style="margin:0;">Board Calculator</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" alt="Logo" style="height:28px; width:auto; object-fit:contain;" />
 </div>
 
