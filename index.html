@@ -433,8 +433,8 @@ function render(){
     document.getElementById('grid').appendChild(row);
   });
 
-  document.getElementById('summary').innerText =
-    `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
+  document.getElementById('summary').innerText=
+  `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
 }
 
 function resetAll(){
