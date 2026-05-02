@@ -242,11 +242,16 @@ function render(){
       cells.push(d);
     }
 
-    if(r === rows.length - 1) cells.reverse();
+    // CRITICAL FIX:
+    // Always fill the LAST ROW from right to left based on BASE, not total
+    const isLastRow = r === rows.length - 1;
+
+    if(isLastRow){
+      cells.reverse();
+    }
 
     cells.forEach(x => row.appendChild(x));
 
-    // ADD ROW NUMBER ON RIGHT SIDE OF STACK
     const rn = document.createElement('div');
     rn.className = 'rowNum';
     rn.innerText = r + 1;
