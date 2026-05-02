@@ -186,6 +186,11 @@ function basePieces(s){
   return s.boards;
 }
 
+function isReadyToRender(s){
+  const base=basePieces(s);
+  return base>0 && s.perRow>0 && s.topLoose!==null;
+}
+
 function canProceed(){
   const s=state();
 
@@ -266,10 +271,12 @@ function clearGrid(){
 }
 
 function render(){
-  clearGrid();
   const s=state();
+  if(!isReadyToRender(s)) return;
+
+  clearGrid();
+
   const base=basePieces(s);
-  if(step<2||!base||!s.perRow) return;
 
   const total=base+s.rejects;
   const phys=Math.ceil(total/s.yield);
