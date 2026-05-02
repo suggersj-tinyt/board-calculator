@@ -1,6 +1,6 @@
 {
   "name": "Board Calculator",
-  "short_name": "Boards",
+  "short_name": "Pack Visualiser",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
