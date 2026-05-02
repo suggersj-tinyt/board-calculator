@@ -210,7 +210,6 @@ function updateLooseOptions(){
   const base=basePieces(s);
   if(!base||!s.perRow) return;
 
-  // STRICT RULE: loose boards limited to (boards per row - 1)
   const max=Math.max(0, s.perRow - 1);
 
   const sel=looseSel;
@@ -232,7 +231,6 @@ function updateLooseOptions(){
     sel.appendChild(o);
   }
 
-  // enforce constraint strictly: cannot exceed perRow-1
   if(!Number.isFinite(prev) || prev>max){
     sel.value='';
   } else {
