@@ -16,7 +16,7 @@
     overflow-x:hidden;
   }
 
-  /* HEADER SPACING FIX */
+  /* HEADER */
   .header {
     display:flex;
     justify-content:space-between;
@@ -25,6 +25,7 @@
     margin-bottom:14px;
   }
 
+  /* PANEL */
   .panel {
     display:grid;
     grid-template-columns:1fr;
@@ -36,13 +37,25 @@
     width:100%;
     padding:10px;
     font-size:16px;
+    box-sizing:border-box;
+  }
+
+  /* 👇 CONSTRAIN BOARD INPUT WIDTH */
+  #boardsWrap {
+    display:flex;
+    justify-content:flex-start;
+  }
+
+  #boardsWrap input {
+    max-width:260px;
+    width:100%;
   }
 
   .hidden {
     display:none !important;
   }
 
-  /* BUTTON TIGHTENING (iOS FRIENDLY) */
+  /* BUTTON IMPROVEMENTS (iOS FRIENDLY) */
   .btnRow {
     display:flex;
     flex-direction:column;
@@ -51,11 +64,11 @@
   }
 
   button {
-    padding:10px 12px;
+    padding:9px 12px;
     width:100%;
     margin-top:0;
     font-size:16px;
-    line-height:1.1;
+    line-height:1.15;
 
     border-radius:6px;
     border:1px solid rgba(0,0,0,0.15);
@@ -64,6 +77,11 @@
     appearance:none;
   }
 
+  button:active {
+    transform:scale(0.99);
+  }
+
+  /* GRID */
   .grid {
     display:flex;
     flex-direction:column;
@@ -84,7 +102,6 @@
     margin-bottom:12px;
   }
 
-  /* CORE FIX */
   .cell, .empty {
     flex: 1 1 0;
     min-width: 0;
@@ -181,11 +198,11 @@
 <div class="grid" id="grid"></div>
 
 <script>
-let step=1;
+let step = 1;
 
-const BOARD_LENGTHS=["Select Board Length",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
+const BOARD_LENGTHS = ["Select Board Length",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
 
-const modeSel=document.getElementById('mode');
+const modeSel = document.getElementById('mode');
 ['Boards','Linear'].forEach(v=>{
   const o=document.createElement('option');
   o.value=v.toLowerCase();
@@ -213,6 +230,7 @@ for(let i=1;i<=6;i++){
 yieldSel.value=1;
 
 const perRowSel=document.getElementById('perRow');
+
 function buildPerRow(){
   perRowSel.innerHTML='';
   const ph=document.createElement('option');
@@ -221,6 +239,7 @@ function buildPerRow(){
   ph.disabled=true;
   ph.selected=true;
   perRowSel.appendChild(ph);
+
   for(let i=1;i<=15;i++){
     const o=document.createElement('option');
     o.value=i;
@@ -233,8 +252,6 @@ buildPerRow();
 const looseSel=document.getElementById('topLoose');
 
 function state(){
-  const looseRaw=looseSel.value;
-
   return {
     mode:modeSel.value,
     boards:+document.getElementById('boards').value||0,
@@ -242,7 +259,7 @@ function state(){
     boardLength:+document.getElementById('boardLength').value||0,
     perRow:+perRowSel.value||0,
     yield:+document.getElementById('yield').value||1,
-    topLoose:looseRaw===''?null:parseInt(looseRaw),
+    topLoose: looseSel.value===''?null:parseInt(looseSel.value),
     rejects:+document.getElementById('rejects').value||0
   };
 }
@@ -255,54 +272,16 @@ function basePieces(s){
   return s.boards;
 }
 
-function isReadyToRender(s){
-  const base=basePieces(s);
-  return base>0 && s.perRow>0 && s.topLoose!==null;
-}
-
 function canProceed(){
   const s=state();
 
   if(step===1){
     return s.mode==='boards' ? s.boards>0 : (s.metres>0 && s.boardLength>0);
   }
-
   if(step===2) return s.perRow>0;
   if(step===4) return s.topLoose!==null;
 
   return true;
-}
-
-function updateLooseOptions(){
-  const s=state();
-  const base=basePieces(s);
-  if(!base||!s.perRow) return;
-
-  const max=Math.max(0, s.perRow - 1);
-  const sel=looseSel;
-  const prev=parseInt(sel.value);
-
-  sel.innerHTML='';
-
-  const ph=document.createElement('option');
-  ph.value='';
-  ph.textContent='How many loose boards?';
-  ph.disabled=true;
-  ph.selected=true;
-  sel.appendChild(ph);
-
-  for(let i=0;i<=max;i++){
-    const o=document.createElement('option');
-    o.value=i;
-    o.textContent=i;
-    sel.appendChild(o);
-  }
-
-  if(!Number.isFinite(prev) || prev>max){
-    sel.value='';
-  } else {
-    sel.value=String(prev);
-  }
 }
 
 function clearGrid(){
@@ -319,8 +298,6 @@ function updateUI(){
   document.getElementById('nextBtn').disabled=!canProceed();
   document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
   document.getElementById('backBtn').classList.toggle('hidden',step<=1);
-
-  updateLooseOptions();
 }
 
 function nextStep(){
@@ -329,11 +306,66 @@ function nextStep(){
   updateUI(); render();
 }
 
-function prevStep(){ if(step>1) step--; updateUI(); render(); }
+function prevStep(){
+  if(step>1) step--;
+  updateUI(); render();
+}
 
 function render(){
   clearGrid();
-  document.getElementById('summary').innerText='(render unchanged for brevity in this edit)';
+  const s = state();
+
+  const base = basePieces(s);
+  if(!base || !s.perRow || s.topLoose===null) return;
+
+  const total = base + s.rejects;
+  const phys = Math.ceil(total / s.yield);
+
+  let rows = [];
+  let rem = phys;
+
+  const first = Math.min(s.topLoose, rem);
+  rows.push(first);
+  rem -= first;
+
+  while(rem>0){
+    const c = Math.min(s.perRow, rem);
+    rows.push(c);
+    rem -= c;
+  }
+
+  let count = 1;
+
+  rows.forEach((cap,r)=>{
+    const row=document.createElement('div');
+    row.className='row'+(r===0?' loose':'');
+
+    let cells=[];
+
+    for(let c=0;c<s.perRow;c++){
+      const d=document.createElement('div');
+      const ok=c<cap&&count<=phys;
+
+      if(ok){
+        d.className='cell'+(count>Math.ceil(base/s.yield)?' reject':'');
+        d.innerText=count++;
+      } else d.className='empty';
+
+      cells.push(d);
+    }
+
+    cells.reverse().forEach(x=>row.appendChild(x));
+
+    const rn=document.createElement('div');
+    rn.className='rowNum';
+    rn.innerText=r+1;
+    row.appendChild(rn);
+
+    document.getElementById('grid').appendChild(row);
+  });
+
+  document.getElementById('summary').innerText =
+    `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
 }
 
 function resetAll(){
@@ -350,8 +382,11 @@ function resetAll(){
   updateUI();
 }
 
+document.querySelectorAll('input,select').forEach(el=>
+  el.addEventListener('input',()=>{updateUI();render();})
+);
+
 modeSel.addEventListener('change',()=>{step=1;updateUI();render();});
-document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>{updateUI();render();}));
 
 updateUI();render();
 </script>
