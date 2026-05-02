@@ -25,37 +25,39 @@
     margin-bottom:14px;
   }
 
-  /* PANEL */
+  /* CENTERED FORM PANEL */
   .panel {
     display:grid;
     grid-template-columns:1fr;
     gap:8px;
     margin-bottom:10px;
+
+    max-width:420px;     /* 👈 core change: form column width */
+    margin-left:auto;
+    margin-right:auto;
   }
 
-  input, select {
+  /* UNIFIED CONTROL WIDTH */
+  .panel input,
+  .panel select {
     width:100%;
+    max-width:260px;     /* 👈 consistent control width */
     padding:10px;
     font-size:16px;
     box-sizing:border-box;
   }
 
-  /* 👇 CONSTRAIN BOARD INPUT WIDTH */
+  /* boards input stays aligned with same rule */
   #boardsWrap {
     display:flex;
     justify-content:flex-start;
-  }
-
-  #boardsWrap input {
-    max-width:260px;
-    width:100%;
   }
 
   .hidden {
     display:none !important;
   }
 
-  /* BUTTON IMPROVEMENTS (iOS FRIENDLY) */
+  /* BUTTONS MATCH FORM WIDTH */
   .btnRow {
     display:flex;
     flex-direction:column;
@@ -66,7 +68,8 @@
   button {
     padding:9px 12px;
     width:100%;
-    margin-top:0;
+    max-width:260px;     /* 👈 align with inputs */
+    margin:0 auto;
     font-size:16px;
     line-height:1.15;
 
@@ -81,7 +84,7 @@
     transform:scale(0.99);
   }
 
-  /* GRID */
+  /* GRID FULL WIDTH (important contrast with form) */
   .grid {
     display:flex;
     flex-direction:column;
@@ -313,9 +316,10 @@ function prevStep(){
 
 function render(){
   clearGrid();
-  const s = state();
 
+  const s = state();
   const base = basePieces(s);
+
   if(!base || !s.perRow || s.topLoose===null) return;
 
   const total = base + s.rejects;
