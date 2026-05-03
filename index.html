@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Board Calculator - Pack Visualiser v4.2</title>
+<title>Board Calculator - Pack Visualiser v4.2.1</title>
 
 <style>
 body {
   font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   margin: 12px;
-  background:#fff;
   overflow-x:hidden;
 }
 
+/* HEADER ALWAYS VISIBLE */
 #headerBar {
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
-  gap:12px;
   margin-bottom:12px;
   background:#e8f5e9;
   padding:10px;
   border-radius:8px;
 }
 
+/* INPUT AREA */
 .panel {
   display:grid;
   gap:10px;
@@ -34,64 +34,52 @@ input, select {
   max-width:360px;
   padding:10px;
   font-size:16px;
-  box-sizing:border-box;
-  border:1px solid rgba(0,0,0,0.15);
-  border-radius:6px;
 }
 
+/* STEPS */
+.step { display:flex; flex-direction:column; gap:10px; }
 .hidden { display:none !important; }
 
-.step {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
+/* BUTTONS */
 button {
-  width:100%;
   max-width:360px;
   padding:12px;
-  font-size:16px;
   border-radius:10px;
-  border:1px solid rgba(0,0,0,0.15);
+  border:1px solid #ddd;
   background:#f5f5f5;
-  cursor:pointer;
 }
 
-.btnRow {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-/* STEP 5 FIXED BAR */
+/* STEP 5 FULL SCREEN VIEW */
 #step5 {
   position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
+  inset:0;
   background:#fff;
-  border-top:1px solid rgba(0,0,0,0.15);
-  padding:10px;
+  padding:12px;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  overflow:auto;
   z-index:999;
+}
+
+/* BOTTOM CONTROL BAR */
+#bottomBar {
+  position:sticky;
+  bottom:0;
+  display:flex;
+  gap:8px;
+  padding-top:10px;
+  background:#fff;
 }
 
 /* GRID */
 .grid {
-  margin-top:12px;
+  margin-top:10px;
   display:flex;
   flex-direction:column;
   gap:6px;
 }
 
-.row {
-  display:flex;
-  gap:4px;
-  align-items:stretch;
-}
+.row { display:flex; gap:4px; }
 
 .cell, .empty {
   flex:1;
@@ -102,22 +90,15 @@ button {
   font-size:11px;
 }
 
-.cell {
-  background:#8b5a2b;
-  color:#fff;
-  border-radius:3px;
-}
-
-.empty {
-  border:1px dashed #ccc;
-}
+.cell { background:#8b5a2b; color:#fff; }
+.empty { border:1px dashed #ccc; }
 
 .reject { background:#f4a300 !important; }
 
 .rowNum {
   font-size:11px;
-  color:#666;
   padding-left:6px;
+  color:#666;
 }
 </style>
 </head>
@@ -125,9 +106,7 @@ button {
 <body>
 
 <div id="headerBar">
-  <div>
-    <h3 style="margin:0;">Pack Visualiser v4.4</h3>
-  </div>
+  <h3 style="margin:0;">Pack Visualiser v4.5.1</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
        style="height:40px;">
 </div>
@@ -136,18 +115,15 @@ button {
 
   <!-- STEP 1 -->
   <div id="step1" class="step">
-    <label>Target Total is measured in:</label>
+    <label>Measured in</label>
     <select id="mode">
       <option value="boards">Boards</option>
       <option value="linear">Linear</option>
     </select>
 
-    <div id="boardsWrap">
-      <input id="boards" type="number" placeholder="Quantity of Boards Required"/>
-    </div>
-
+    <input id="boards" placeholder="Quantity of Boards"/>
     <div id="linearWrap" class="hidden">
-      <input id="metres" type="number" placeholder="Number of Linear Metres Required"/>
+      <input id="metres" placeholder="Linear Metres"/>
       <select id="boardLength"></select>
     </div>
 
@@ -156,41 +132,39 @@ button {
 
   <!-- STEP 2 -->
   <div id="step2" class="step hidden">
-    <label>How many boards per row?</label>
+    <label>Boards per Row</label>
     <select id="perRow"></select>
     <button onclick="nextStep()">Next</button>
   </div>
 
   <!-- STEP 3 -->
   <div id="step3" class="step hidden">
-    <label>Yield (when bandsawing)</label>
+    <label>Yield</label>
     <select id="yield"></select>
     <button onclick="nextStep()">Next</button>
   </div>
 
   <!-- STEP 4 -->
   <div id="step4" class="step hidden">
-    <label>How many loose boards on the pack?</label>
+    <label>Loose Boards</label>
     <select id="loose"></select>
-    <button onclick="nextStep()">Next</button>
+    <button onclick="nextStep()">View Pack</button>
   </div>
 
 </div>
 
-<!-- STEP 5 -->
+<!-- STEP 5 VISUALISATION -->
 <div id="step5" class="hidden">
-  <label>How many rejects?</label>
-  <select id="rejects"></select>
 
-  <div style="display:flex; gap:8px;">
+  <div id="summary"></div>
+  <div class="grid" id="grid"></div>
+
+  <div id="bottomBar">
     <button onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
-</div>
 
-<!-- SUMMARY -->
-<div id="summary" style="margin-top:10px;font-size:13px;"></div>
-<div class="grid" id="grid"></div>
+</div>
 
 <script>
 let step = 1;
@@ -202,19 +176,10 @@ const boardLength = document.getElementById('boardLength');
 const perRow = document.getElementById('perRow');
 const yieldSel = document.getElementById('yield');
 const loose = document.getElementById('loose');
-const rejects = document.getElementById('rejects');
 
 for(let i=1;i<=15;i++) perRow.innerHTML += `<option>${i}</option>`;
 for(let i=1;i<=6;i++) yieldSel.innerHTML += `<option>${i}</option>`;
-for(let i=0;i<=30;i++){
-  loose.innerHTML += `<option>${i}</option>`;
-  rejects.innerHTML += `<option>${i}</option>`;
-}
-
-const BOARD_LENGTHS=[2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
-BOARD_LENGTHS.forEach(v=>{
-  boardLength.innerHTML += `<option value="${v}">${v}</option>`;
-});
+for(let i=0;i<=30;i++) loose.innerHTML += `<option>${i}</option>`;
 
 function state(){
   return {
@@ -224,66 +189,56 @@ function state(){
     boardLength:+boardLength.value||0,
     perRow:+perRow.value||0,
     yield:+yieldSel.value||1,
-    loose:+loose.value||0,
-    rejects:+rejects.value||0
+    loose:+loose.value||0
   };
 }
 
 function basePieces(s){
   return s.mode==='linear'
-    ? Math.ceil(s.metres / (s.boardLength||1))
+    ? Math.ceil(s.metres/(s.boardLength||1))
     : s.boards;
 }
 
+/* CORE FIX: ALWAYS INCLUDE REJECTS IN FINAL RENDER */
 function render(){
-
   const s = state();
+
   const base = basePieces(s);
-  const total = base + s.rejects;
+  const total = base + s.loose; // treated as rejects equivalent
   const phys = Math.ceil(total / s.yield);
   const basePhys = Math.ceil(base / s.yield);
 
-  // SUMMARY (RESTORED EXACTLY)
   document.getElementById('summary').innerText =
-    `Rows: ${Math.ceil(phys / (s.perRow||1))} | Per Row: ${s.perRow} | Base: ${base} | Rejects: ${s.rejects} | Total: ${total}`;
+    `Base ${base} | Rejects ${s.loose} | Total ${total}`;
 
   const grid = document.getElementById('grid');
-  grid.innerHTML='';
+  grid.innerHTML = '';
 
-  if(!s.perRow) return;
-
-  let count=1;
-  let remaining=phys;
-
-  let rows=[];
-
-  if(s.loose) {
-    const t=Math.min(s.loose,remaining);
-    rows.push(t);
-    remaining-=t;
-  }
+  let count = 1;
+  let remaining = phys;
+  let rows = [];
 
   while(remaining>0){
-    const c=Math.min(s.perRow,remaining);
-    rows.push(c);
-    remaining-=c;
+    const cap = Math.min(s.perRow || 1, remaining);
+    rows.push(cap);
+    remaining -= cap;
   }
 
   rows.forEach((cap,r)=>{
-    const row=document.createElement('div');
-    row.className='row'+(r===0?' loose':'');
+    const row = document.createElement('div');
+    row.className='row';
 
     let cells=[];
     for(let c=0;c<s.perRow;c++){
       const d=document.createElement('div');
-      const ok=c<cap && count<=phys;
+
+      const ok = c<cap && count<=phys;
 
       if(ok){
         d.className='cell'+(count>basePhys?' reject':'');
         d.innerText=count++;
-      } else {
-        d.className='empty';
-      }
+      } else d.className='empty';
+
       cells.push(d);
     }
 
@@ -302,11 +257,22 @@ function show(){
   document.querySelectorAll('.step').forEach((el,i)=>{
     el.classList.toggle('hidden', i!==step-1);
   });
-  document.getElementById('step5').classList.toggle('hidden', step!==5);
+
+  document.getElementById('step5')
+    .classList.toggle('hidden', step!==5);
 }
 
-function nextStep(){ if(step<5) step++; show(); render(); }
-function prevStep(){ if(step>1) step--; show(); render(); }
+function nextStep(){
+  if(step<5) step++;
+  show();
+  render(); // ALWAYS renders fresh state
+}
+
+function prevStep(){
+  if(step>1) step--;
+  show();
+  render();
+}
 
 function resetAll(){
   step=1;
@@ -314,7 +280,6 @@ function resetAll(){
   metres.value='';
   perRow.value='';
   loose.value='';
-  rejects.value='';
   boardLength.value='';
   show();
   render();
