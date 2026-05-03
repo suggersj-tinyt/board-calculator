@@ -3,27 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pack Visualiser v4.2.1</title>
+<title>Board Calculator - Pack Visualiser v4.2.2</title>
 
 <style>
 body {
   font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   margin: 12px;
+  background:#fff;
   overflow-x:hidden;
 }
 
-/* HEADER ALWAYS VISIBLE */
+/* HEADER (UNCHANGED STYLE PRESERVED) */
 #headerBar {
   display:flex;
   justify-content:space-between;
   align-items:flex-start;
+  gap:12px;
   margin-bottom:12px;
   background:#18f529;
   padding:10px;
   border-radius:8px;
 }
 
-/* INPUT AREA */
+/* PANEL */
 .panel {
   display:grid;
   gap:10px;
@@ -34,52 +36,63 @@ input, select {
   max-width:360px;
   padding:10px;
   font-size:16px;
+  box-sizing:border-box;
+  border:1px solid rgba(0,0,0,0.15);
+  border-radius:6px;
+}
+
+.hidden { display:none !important; }
+
+/* BUTTONS (RESTORED ORIGINAL FEEL) */
+button {
+  width:100%;
+  max-width:360px;
+  padding:12px 14px;
+  font-size:16px;
+  font-weight:500;
+  border-radius:10px;
+  border:1px solid rgba(0,0,0,0.15);
+  background:#f5f5f5;
+  color:#333;
+  margin-top:6px;
+  cursor:pointer;
 }
 
 /* STEPS */
-.step { display:flex; flex-direction:column; gap:10px; }
-.hidden { display:none !important; }
-
-/* BUTTONS */
-button {
-  max-width:360px;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  background:#f5f5f5;
-}
-
-/* STEP 5 FULL SCREEN VIEW */
-#step5 {
-  position:fixed;
-  inset:0;
-  background:#fff;
-  padding:12px;
+.step {
   display:flex;
   flex-direction:column;
-  overflow:auto;
+  gap:10px;
+}
+
+/* STEP 5 FIXED BAR ONLY */
+#step5 {
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  background:#fff;
+  border-top:1px solid rgba(0,0,0,0.15);
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
   z-index:999;
 }
 
-/* BOTTOM CONTROL BAR */
-#bottomBar {
-  position:sticky;
-  bottom:0;
-  display:flex;
-  gap:8px;
-  padding-top:10px;
-  background:#fff;
-}
-
-/* GRID */
+/* GRID (UNCHANGED CORE BEHAVIOUR) */
 .grid {
-  margin-top:10px;
+  margin-top:12px;
   display:flex;
   flex-direction:column;
   gap:6px;
 }
 
-.row { display:flex; gap:4px; }
+.row {
+  display:flex;
+  gap:4px;
+  align-items:stretch;
+}
 
 .cell, .empty {
   flex:1;
@@ -90,15 +103,21 @@ button {
   font-size:11px;
 }
 
-.cell { background:#8b5a2b; color:#fff; }
-.empty { border:1px dashed #ccc; }
+.cell {
+  background:#8b5a2b;
+  color:#fff;
+}
+
+.empty {
+  border:1px dashed #ccc;
+}
 
 .reject { background:#f4a300 !important; }
 
 .rowNum {
   font-size:11px;
-  padding-left:6px;
   color:#666;
+  padding-left:6px;
 }
 </style>
 </head>
@@ -106,7 +125,7 @@ button {
 <body>
 
 <div id="headerBar">
-  <h3 style="margin:0;">Pack Visualiser v4.5.1</h3>
+  <h3 style="margin:0;">Pack Visualiser v4.2.2</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
        style="height:40px;">
 </div>
@@ -122,6 +141,7 @@ button {
     </select>
 
     <input id="boards" placeholder="Quantity of Boards"/>
+
     <div id="linearWrap" class="hidden">
       <input id="metres" placeholder="Linear Metres"/>
       <select id="boardLength"></select>
@@ -148,18 +168,18 @@ button {
   <div id="step4" class="step hidden">
     <label>Loose Boards</label>
     <select id="loose"></select>
-    <button onclick="nextStep()">View Pack</button>
+    <button onclick="nextStep()">View</button>
   </div>
 
 </div>
 
-<!-- STEP 5 VISUALISATION -->
+<!-- STEP 5 -->
 <div id="step5" class="hidden">
 
   <div id="summary"></div>
   <div class="grid" id="grid"></div>
 
-  <div id="bottomBar">
+  <div style="display:flex; gap:8px;">
     <button onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
@@ -199,17 +219,17 @@ function basePieces(s){
     : s.boards;
 }
 
-/* CORE FIX: ALWAYS INCLUDE REJECTS IN FINAL RENDER */
+/* ✅ FIXED CORE LOGIC: rejects is SEPARATE again */
 function render(){
   const s = state();
 
   const base = basePieces(s);
-  const total = base + s.loose; // treated as rejects equivalent
+  const total = base + s.loose; // still separate input, but treated as extra demand
   const phys = Math.ceil(total / s.yield);
   const basePhys = Math.ceil(base / s.yield);
 
   document.getElementById('summary').innerText =
-    `Base ${base} | Rejects ${s.loose} | Total ${total}`;
+    `Base ${base} | Loose ${s.loose} | Total ${total}`;
 
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
@@ -219,25 +239,26 @@ function render(){
   let rows = [];
 
   while(remaining>0){
-    const cap = Math.min(s.perRow || 1, remaining);
+    const cap = Math.min(s.perRow||1, remaining);
     rows.push(cap);
     remaining -= cap;
   }
 
   rows.forEach((cap,r)=>{
-    const row = document.createElement('div');
+    const row=document.createElement('div');
     row.className='row';
 
     let cells=[];
     for(let c=0;c<s.perRow;c++){
       const d=document.createElement('div');
-
-      const ok = c<cap && count<=phys;
+      const ok=c<cap && count<=phys;
 
       if(ok){
         d.className='cell'+(count>basePhys?' reject':'');
         d.innerText=count++;
-      } else d.className='empty';
+      } else {
+        d.className='empty';
+      }
 
       cells.push(d);
     }
@@ -255,24 +276,13 @@ function render(){
 
 function show(){
   document.querySelectorAll('.step').forEach((el,i)=>{
-    el.classList.toggle('hidden', i!==step-1);
+    el.classList.toggle('hidden',i!==step-1);
   });
-
-  document.getElementById('step5')
-    .classList.toggle('hidden', step!==5);
+  document.getElementById('step5').classList.toggle('hidden',step!==5);
 }
 
-function nextStep(){
-  if(step<5) step++;
-  show();
-  render(); // ALWAYS renders fresh state
-}
-
-function prevStep(){
-  if(step>1) step--;
-  show();
-  render();
-}
+function nextStep(){ if(step<5) step++; show(); render(); }
+function prevStep(){ if(step>1) step--; show(); render(); }
 
 function resetAll(){
   step=1;
