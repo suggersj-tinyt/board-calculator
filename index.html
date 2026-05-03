@@ -360,29 +360,55 @@ function canProceed(){
 }
 
 function updateUI(){
-  document.getElementById('boardsWrap').classList.toggle('hidden',modeSel.value!=='boards');
-  document.getElementById('linearWrap').classList.toggle('hidden',modeSel.value!=='linear');
 
-  document.querySelectorAll('.step').forEach((el,i)=>
-    el.classList.toggle('hidden',i!==step-1)
+  // mode-dependent input swap (Boards vs Linear)
+  document.getElementById('boardsWrap')
+    .classList.toggle('hidden', modeSel.value !== 'boards');
+
+  document.getElementById('linearWrap')
+    .classList.toggle('hidden', modeSel.value !== 'linear');
+
+  // STEP visibility control (core flow)
+  document.querySelectorAll('.step').forEach((el, i) =>
+    el.classList.toggle('hidden', i !== step - 1)
   );
 
+  const inStep5 = step === 5;
+
+  // STEP 5: hide all setup inputs cleanly
   document.getElementById('step1_boards')
-    .classList.toggle('hidden', step === 5);
-  
+    .classList.toggle('hidden', inStep5);
+
+  document.getElementById('step2_perRow')
+    .classList.toggle('hidden', inStep5);
+
+  document.getElementById('step3_yield')
+    .classList.toggle('hidden', inStep5);
+
+  document.getElementById('step4_loose')
+    .classList.toggle('hidden', inStep5);
+
+  // KEEP header + visualiser always visible
   document.getElementById('headerBar')
-  .classList.toggle('hidden', step === 5);
+    .classList.remove('hidden');
 
-  document.getElementById('modeBlock')
-  .classList.toggle('hidden', step === 5);
+  // mode selector block (only if it exists in your HTML)
+  const modeBlock = document.getElementById('modeBlock');
+  if (modeBlock) {
+    modeBlock.classList.toggle('hidden', inStep5);
+  }
 
-  document.getElementById('nextBtn').disabled=!canProceed();
-  document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
-  document.getElementById('backBtn').classList.toggle('hidden',step<=1);
+  // navigation buttons
+  document.getElementById('nextBtn')
+    .classList.toggle('hidden', inStep5);
+
+  document.getElementById('backBtn')
+    .classList.toggle('hidden', step <= 1);
 
   document.querySelector('.btnRow')
-    .classList.toggle('hidden', step === 5);
+    .classList.toggle('hidden', inStep5);
 
+  // keep reject UI active in step 5 (important for your workflow)
   updateLooseOptions();
 }
 
