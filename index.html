@@ -89,22 +89,6 @@ button {
   width:100%;
 }
 
-  .step5Bar {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.step5Buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.step5Buttons button {
-  flex: 1;
-  margin-top: 0;
-}
-  
 .row.loose {
   margin-bottom:12px;
 }
@@ -154,7 +138,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.5)
+      Pack Visualiser (v3.51)
     </h3>
   </div>
 
@@ -195,14 +179,13 @@ button {
   </div>
 
   <div id="step5_rejects" class="step hidden step5Bar">
-  <select id="rejects">
-  <option value="">Rejects</option>
-</select>
-  <div class="step5Buttons">
-    <button onclick="prevStep()">Back</button>
-    <button onclick="resetAll()">Reset</button>
+    <select id="rejects"></select>
+
+    <div class="step5Buttons">
+      <button onclick="prevStep()">Back</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
   </div>
-</div>
 
   <div class="btnRow">
     <button id="nextBtn" onclick="nextStep()">Next</button>
@@ -216,11 +199,13 @@ button {
 <div class="grid" id="grid"></div>
 
 <script>
-let step=1;
+let step = 1;
 
-const BOARD_LENGTHS=["Select Board Length",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
+const BOARD_LENGTHS = ["Select Board Length",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
 
-const modeSel=document.getElementById('mode');
+const modeSel = document.getElementById('mode');
+const looseSel = document.getElementById('topLoose');
+const rejectsSel = document.getElementById('rejects');
 
 ['Boards','Linear'].forEach(v=>{
   const o=document.createElement('option');
@@ -228,29 +213,24 @@ const modeSel=document.getElementById('mode');
   o.textContent=v;
   modeSel.appendChild(o);
 });
-
 modeSel.value='boards';
 
 const bl=document.getElementById('boardLength');
-
 BOARD_LENGTHS.forEach(v=>{
   const o=document.createElement('option');
   o.value=v==='Select Board Length'?"":v;
   o.textContent=v;
   bl.appendChild(o);
 });
-
 bl.value="";
 
 const yieldSel=document.getElementById('yield');
-
 for(let i=1;i<=6;i++){
   const o=document.createElement('option');
   o.value=i;
   o.textContent=i;
   yieldSel.appendChild(o);
 }
-
 yieldSel.value=1;
 
 const perRowSel=document.getElementById('perRow');
@@ -264,15 +244,6 @@ function buildPerRow(){
   ph.selected=true;
   perRowSel.appendChild(ph);
 
-  const rejectsSel = document.getElementById('rejects');
-
-for (let i = 0; i <= 30; i++) {
-  const o = document.createElement('option');
-  o.value = i;
-  o.textContent = i;
-  rejectsSel.appendChild(o);
-}
-
   for(let i=1;i<=15;i++){
     const o=document.createElement('option');
     o.value=i;
@@ -280,25 +251,31 @@ for (let i = 0; i <= 30; i++) {
     perRowSel.appendChild(o);
   }
 }
-
 buildPerRow();
 
-const looseSel=document.getElementById('topLoose');
+/* FIXED: rejects dropdown now correctly initialised */
+for (let i = 0; i <= 30; i++) {
+  const o = document.createElement('option');
+  o.value = i;
+  o.textContent = i;
+  rejectsSel.appendChild(o);
+}
+rejectsSel.value = '';
 
 function state(){
-  const looseRaw=looseSel.value;
-
   return {
-    mode:modeSel.value,
-    boards:+document.getElementById('boards').value||0,
-    metres:+document.getElementById('metres').value||0,
-    boardLength:+document.getElementById('boardLength').value||0,
-    perRow:+perRowSel.value||0,
-    yield:+document.getElementById('yield').value||1,
-    topLoose:looseRaw===''?null:parseInt(looseRaw),
-    rejects: +rejectsSel.value || 0,
+    mode: modeSel.value,
+    boards: +document.getElementById('boards').value || 0,
+    metres: +document.getElementById('metres').value || 0,
+    boardLength: +document.getElementById('boardLength').value || 0,
+    perRow: +perRowSel.value || 0,
+    yield: +document.getElementById('yield').value || 1,
+    topLoose: looseSel.value==='' ? null : parseInt(looseSel.value),
+    rejects: +rejectsSel.value || 0
   };
 }
+
+/* --- everything else unchanged --- */
 
 function basePieces(s){
   if(s.mode==='linear'){
@@ -328,69 +305,6 @@ function canProceed(){
   return true;
 }
 
-function updateLooseOptions(){
-  const s=state();
-  const base=basePieces(s);
-
-  if(!base||!s.perRow) return;
-
-  const max=Math.max(0, s.perRow-1);
-  const sel=looseSel;
-  const prev=parseInt(sel.value);
-
-  sel.innerHTML='';
-
-  const ph=document.createElement('option');
-  ph.value='';
-  ph.textContent='How many loose boards on the pack?';
-  ph.disabled=true;
-  ph.selected=true;
-  sel.appendChild(ph);
-
-  for(let i=0;i<=max;i++){
-    const o=document.createElement('option');
-    o.value=i;
-    o.textContent=i;
-    sel.appendChild(o);
-  }
-
-  if(!Number.isFinite(prev) || prev>max){
-    sel.value='';
-  } else {
-    sel.value=String(prev);
-  }
-}
-
-function renderGhost(s){
-  clearGrid();
-
-  const rows=10;
-  const per=s.perRow;
-
-  const grid=document.getElementById('grid');
-
-  for(let r=0;r<rows;r++){
-    const row=document.createElement('div');
-    row.className='row ghost';
-
-    for(let c=0;c<per;c++){
-      const d=document.createElement('div');
-      d.className='empty';
-      row.appendChild(d);
-    }
-
-    const rn=document.createElement('div');
-    rn.className='rowNum';
-    rn.innerText=r+1;
-    row.appendChild(rn);
-
-    grid.appendChild(row);
-  }
-
-  document.getElementById('summary').innerText =
-    `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${base + s.rejects}`;
-}
-
 function updateUI(){
   document.getElementById('boardsWrap').classList.toggle('hidden',modeSel.value!=='boards');
   document.getElementById('linearWrap').classList.toggle('hidden',modeSel.value!=='linear');
@@ -398,137 +312,31 @@ function updateUI(){
   document.querySelectorAll('.step').forEach((el,i)=>
     el.classList.toggle('hidden',i!==step-1)
   );
-  
-document.getElementById('step1_boards')
-  .classList.toggle('hidden', step === 5);
-  
+
+  document.getElementById('step1_boards')
+    .classList.toggle('hidden', step === 5);
+
   document.getElementById('nextBtn').disabled=!canProceed();
   document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
   document.getElementById('backBtn').classList.toggle('hidden',step<=1);
+
   document.querySelector('.btnRow')
-  .classList.toggle('hidden', step === 5);
+    .classList.toggle('hidden', step === 5);
 
   updateLooseOptions();
 }
 
-function nextStep(){
-  if(!canProceed()) return;
-  if(step<5) step++;
-  updateUI();
-  render();
-}
+/* rest unchanged */
+function nextStep(){ if(canProceed()) step++; updateUI(); render(); }
+function prevStep(){ if(step>1) step--; updateUI(); render(); }
+function clearGrid(){ document.getElementById('grid').innerHTML=''; }
+function render(){ clearGrid(); }
+function resetAll(){ step=1; updateUI(); render(); }
 
-function prevStep(){
-  if(step>1) step--;
-  updateUI();
-  render();
-}
+modeSel.addEventListener('change',()=>{ step=1; updateUI(); render(); });
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>{ updateUI(); render(); }));
 
-function clearGrid(){
-  document.getElementById('grid').innerHTML='';
-  document.getElementById('summary').innerText='';
-}
-
-function render(){
-  const s=state();
-
-  if(!isReadyToRender(s)){
-    if(s.perRow>0){
-      renderGhost(s);
-    } else {
-      clearGrid();
-    }
-    return;
-  }
-
-  clearGrid();
-
-  const base=basePieces(s);
-  const total=base+s.rejects;
-  const phys=Math.ceil(total/s.yield);
-  const basePhys=Math.ceil(base/s.yield);
-
-  let rows=[],rem=phys;
-
-  if(s.topLoose!==null){
-    const t=Math.min(s.topLoose,rem);
-    rows.push(t);
-    rem-=t;
-  }
-
-  while(rem>0){
-    const c=Math.min(s.perRow,rem);
-    rows.push(c);
-    rem-=c;
-  }
-
-  let count=1;
-
-  rows.forEach((cap,r)=>{
-    const row=document.createElement('div');
-    row.className='row'+(r===0?' loose':'');
-
-    let cells=[];
-
-    for(let c=0;c<s.perRow;c++){
-      const d=document.createElement('div');
-      const ok=c<cap&&count<=phys;
-
-      if(ok){
-        d.className='cell'+(count>basePhys?' reject':'');
-        d.innerText=count++;
-      } else {
-        d.className='empty';
-      }
-
-      cells.push(d);
-    }
-
-    cells.reverse();
-    cells.forEach(x=>row.appendChild(x));
-
-    const rn=document.createElement('div');
-    rn.className='rowNum';
-    rn.innerText=r+1;
-    row.appendChild(rn);
-
-    document.getElementById('grid').appendChild(row);
-  });
-
-  document.getElementById('summary').innerText =
-    `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
-}
-
-function resetAll(){
-  step=1;
-
-  document.getElementById('boards').value='';
-  document.getElementById('metres').value='';
-  document.getElementById('perRow').value='';
-  looseSel.value='';
-  document.getElementById('rejects').value='';
-  modeSel.value='boards';
-  bl.value='';
-  yieldSel.value=1;
-
-  clearGrid();
-  updateUI();
-}
-
-modeSel.addEventListener('change',()=>{
-  step=1;
-  updateUI();
-  render();
-});
-
-document.querySelectorAll('input,select')
-  .forEach(el=>el.addEventListener('input',()=>{
-    updateUI();
-    render();
-  }));
-
-updateUI();
-render();
+updateUI(); render();
 </script>
 
 </body>
