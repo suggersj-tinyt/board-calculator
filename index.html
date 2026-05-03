@@ -152,7 +152,7 @@ button {
 <div id="headerBar" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.57)
+      Pack Visualiser (v3.58)
     </h3>
   </div>
 
@@ -163,8 +163,10 @@ button {
 
 <div class="panel">
 
+  <div id="modeBlock">
   <label>Target Total is measured in:</label>
   <select id="mode"></select>
+</div>
 
   <div id="step1_boards" class="step">
 
@@ -347,6 +349,9 @@ function updateUI(){
     .classList.toggle('hidden', step === 5);
   
   document.getElementById('headerBar')
+  .classList.toggle('hidden', step === 5);
+
+  document.getElementById('modeBlock')
   .classList.toggle('hidden', step === 5);
 
   document.getElementById('nextBtn').disabled=!canProceed();
