@@ -24,10 +24,6 @@ body {
   margin-bottom:10px;
 }
 
-  #linearWrap select {
-  margin-top: 8px;
-}
-  
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -202,16 +198,12 @@ button {
       <input id="boards" type="number" placeholder="Quantity of Boards Required" />
     </div>
 
-   <div id="linearWrap">
-  <input 
-    id="metres" 
-    type="number" 
-    placeholder="Number of Linear Metres Required" 
-    inputmode="decimal"
-  />
-  <select id="boardLength"></select>
-</div>
-    
+    <div id="linearWrap">
+      <input id="metres" type="number" placeholder="Number of Linear Metres Required" />
+      <select id="boardLength"></select>
+    </div>
+
+  </div>
 
   <div id="step2_perRow" class="step hidden">
     <select id="perRow"></select>
