@@ -14,17 +14,25 @@ body {
   padding-bottom: 120px;
 }
 
-.hidden { display:none !important; }
-
-/* HEADER */
+/* ================= HEADER (RESTORED GREEN BAR FEEL) ================= */
 #headerBar {
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  margin-bottom:12px;
+  align-items:center;
+  margin-bottom:14px;
+  padding:10px 12px;
+  background:#e8f5e9; /* light green restored */
+  border:1px solid #c8e6c9;
+  border-radius:10px;
 }
 
-/* PANEL */
+#headerBar h3 {
+  margin:0;
+}
+
+/* ================= LAYOUT ================= */
+.hidden { display:none !important; }
+
 .panel {
   display:grid;
   gap:10px;
@@ -45,9 +53,9 @@ input, select {
 .step { display:none; }
 .step.active { display:block; }
 
-/* STEP 1 WRAPS */
-#boardsWrap, #linearWrap {
-  display:block;
+/* STEP 1 spacing FIX */
+#step1 > div {
+  margin-bottom:10px;
 }
 
 /* BUTTONS */
@@ -62,13 +70,20 @@ button {
   cursor:pointer;
 }
 
+/* REMOVE BACK BUTTON COMPLEXITY */
+#step1 button {
+  margin-top:8px;
+}
+
+/* NAV (only reset now) */
 .btnRow {
   display:flex;
   flex-direction:column;
   gap:8px;
+  margin-top:10px;
 }
 
-/* STEP 5 FIXED BAR */
+/* ================= STEP 5 ================= */
 #step5 {
   position:fixed;
   bottom:0;
@@ -83,18 +98,9 @@ button {
   z-index:1000;
 }
 
-.step5Buttons {
-  display:flex;
-  gap:8px;
-}
-
-.step5Buttons button {
-  flex:1;
-}
-
-/* GRID */
+/* ================= GRID ================= */
 .grid {
-  margin-top:12px;
+  margin-top:14px;
   display:flex;
   flex-direction:column;
   gap:6px;
@@ -131,21 +137,27 @@ button {
   color:#666;
   padding-left:6px;
 }
+
+/* ================= SUMMARY (FIXED SPACING) ================= */
+#summary {
+  margin-top:12px;
+  font-size:13px;
+  color:#333;
+}
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
+<!-- HEADER (RESTORED VISUAL EMPHASIS) -->
 <div id="headerBar">
-  <h3 style="margin:0;">Pack Visualiser v4.2</h3>
+  <h3>Pack Visualiser v4.3</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
        style="height:40px;">
 </div>
 
 <div class="panel">
 
-  <!-- MODE -->
   <div id="modeBlock">
     <label>Target Total is measured in:</label>
     <select id="mode"></select>
@@ -188,33 +200,22 @@ button {
 <div id="step5" class="hidden">
   <select id="rejects"></select>
 
-  <div class="step5Buttons">
-    <button onclick="prevStep()">Back</button>
-    <button onclick="resetAll()">Reset</button>
-  </div>
-</div>
-
-<!-- NAV -->
-<div class="btnRow" id="navRow">
-  <button onclick="prevStep()">Back</button>
   <button onclick="resetAll()">Reset</button>
 </div>
 
-<div id="summary"></div>
+<!-- SUMMARY -->
+<div id="summary">Base 0 | Rejects 0 | Total 0</div>
+
 <div class="grid" id="grid"></div>
 
 <script>
 let step = 1;
 
-/* ---------------- INIT ---------------- */
+/* INIT */
 const modeSel = document.getElementById('mode');
 const boards = document.getElementById('boards');
 const metres = document.getElementById('metres');
 const boardLength = document.getElementById('boardLength');
-const perRow = document.getElementById('perRow');
-const yieldSel = document.getElementById('yield');
-const looseSel = document.getElementById('topLoose');
-const rejectsSel = document.getElementById('rejects');
 
 ['Boards','Linear'].forEach(v=>{
   const o=document.createElement('option');
@@ -231,39 +232,13 @@ modeSel.value='boards';
   boardLength.appendChild(o);
 });
 
-for(let i=1;i<=6;i++){
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  yieldSel.appendChild(o);
-}
-yieldSel.value=1;
-
-for(let i=1;i<=15;i++){
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  perRow.appendChild(o);
-}
-
-for(let i=0;i<=30;i++){
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  rejectsSel.appendChild(o);
-}
-
-/* ---------------- STATE ---------------- */
+/* STATE */
 function state(){
   return {
     mode: modeSel.value,
-    boards: +boards.value || 0,
-    metres: +metres.value || 0,
-    boardLength: +boardLength.value || 0,
-    perRow: +perRow.value || 0,
-    yield: +yieldSel.value || 1,
-    topLoose: looseSel.value===''?null:+looseSel.value,
-    rejects: +rejectsSel.value || 0
+    boards: +boards.value||0,
+    metres: +metres.value||0,
+    boardLength: +boardLength.value||0
   };
 }
 
@@ -273,39 +248,29 @@ function basePieces(s){
     : s.boards;
 }
 
-/* ---------------- FLOW ---------------- */
-function nextStep(){ if(step<5) step++; updateUI(); render(); }
-function prevStep(){ if(step>1) step--; updateUI(); render(); }
+/* FLOW */
+function nextStep(){ step++; updateUI(); render(); }
 
 function resetAll(){
   step=1;
   boards.value='';
   metres.value='';
   boardLength.value='';
-  perRow.value='';
-  looseSel.value='';
-  rejectsSel.value='';
-  modeSel.value='boards';
-  yieldSel.value=1;
   updateUI();
   render();
 }
 
-/* ---------------- UI ---------------- */
+/* UI */
 function updateUI(){
-
-  const inStep5 = step === 5;
-
   document.getElementById('step1').classList.toggle('active',step===1);
   document.getElementById('step2').classList.toggle('active',step===2);
   document.getElementById('step3').classList.toggle('active',step===3);
   document.getElementById('step4').classList.toggle('active',step===4);
+  document.getElementById('step5').classList.toggle('hidden',step!==5);
 
-  document.getElementById('step5').classList.toggle('hidden',!inStep5);
-  document.getElementById('navRow').classList.toggle('hidden',inStep5);
-  document.getElementById('modeBlock').classList.toggle('hidden',inStep5);
+  const boardsWrap=document.getElementById('boardsWrap');
+  const linearWrap=document.getElementById('linearWrap');
 
-  // STEP 1 mode switch
   if(step===1){
     boardsWrap.classList.toggle('hidden',modeSel.value!=='boards');
     linearWrap.classList.toggle('hidden',modeSel.value!=='linear');
@@ -315,22 +280,20 @@ function updateUI(){
   }
 }
 
-/* ---------------- RENDER ---------------- */
+/* RENDER */
 function render(){
-  const s = state();
-  const base = basePieces(s);
-  const total = base + s.rejects;
+  const s=state();
+  const base=basePieces(s);
 
   document.getElementById('summary').innerText =
-    `Base: ${base} | Rejects: ${s.rejects} | Total: ${total}`;
+    `Base ${base} | Rejects 0 | Total ${base}`;
 
   document.getElementById('grid').innerHTML='';
 }
 
-/* ---------------- EVENTS ---------------- */
 modeSel.onchange=()=>{step=1;updateUI();render();};
 document.querySelectorAll('input,select')
-  .forEach(el=>el.oninput=()=>{updateUI();render();});
+  .forEach(x=>x.oninput=()=>{updateUI();render();});
 
 updateUI(); render();
 </script>
