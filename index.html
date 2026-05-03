@@ -2,122 +2,100 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Board Calculator - Pack Visualiser v4.2.2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pack Visualiser v4.2</title>
 
 <style>
 body {
-  font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
-  margin: 12px;
+  font-family: Avenir, "Segoe UI", Arial;
+  margin:0;
   background:#fff;
-  overflow-x:hidden;
 }
 
-/* HEADER (UNCHANGED STYLE PRESERVED) */
-#headerBar {
+/* header */
+#headerBar{
+  background:#4caf50;
+  color:#fff;
+  padding:12px;
   display:flex;
   justify-content:space-between;
-  align-items:flex-start;
-  gap:12px;
-  margin-bottom:12px;
-  background:#18f529;
-  padding:10px;
+  align-items:center;
+}
+
+/* layout */
+.panel{
+  padding:12px;
+}
+
+.hidden{display:none}
+
+/* inputs */
+input, select{
+  width:100%;
+  max-width:360px;
+  padding:12px;
+  font-size:16px;
+  margin-top:10px;
+}
+
+/* buttons */
+button{
+  width:100%;
+  max-width:360px;
+  padding:12px;
+  margin-top:10px;
+  font-size:16px;
   border-radius:8px;
+  border:1px solid #ccc;
 }
 
-/* PANEL */
-.panel {
-  display:grid;
-  gap:10px;
+.btnRow{
+  margin-top:10px;
 }
 
-input, select {
-  width:100%;
-  max-width:360px;
+/* grid */
+.grid{
   padding:10px;
-  font-size:16px;
-  box-sizing:border-box;
-  border:1px solid rgba(0,0,0,0.15);
-  border-radius:6px;
 }
 
-.hidden { display:none !important; }
-
-/* BUTTONS (RESTORED ORIGINAL FEEL) */
-button {
-  width:100%;
-  max-width:360px;
-  padding:12px 14px;
-  font-size:16px;
-  font-weight:500;
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,0.15);
-  background:#f5f5f5;
-  color:#333;
-  margin-top:6px;
-  cursor:pointer;
-}
-
-/* STEPS */
-.step {
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* STEP 5 FIXED BAR ONLY */
-#step5 {
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  background:#fff;
-  border-top:1px solid rgba(0,0,0,0.15);
-  padding:10px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  z-index:999;
-}
-
-/* GRID (UNCHANGED CORE BEHAVIOUR) */
-.grid {
-  margin-top:12px;
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-
-.row {
+.row{
   display:flex;
   gap:4px;
-  align-items:stretch;
 }
 
-.cell, .empty {
+.cell{
   flex:1;
-  aspect-ratio:3/1;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  background:#8b5a2b;
+  color:#fff;
+  text-align:center;
+  padding:6px;
   font-size:11px;
 }
 
-.cell {
-  background:#8b5a2b;
-  color:#fff;
-}
+.reject{background:#f4a300}
 
-.empty {
+.empty{
+  flex:1;
   border:1px dashed #ccc;
 }
 
-.reject { background:#f4a300 !important; }
+/* step 5 bottom bar */
+#step5_rejects{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  border-top:1px solid #ccc;
+  padding:10px;
+}
 
-.rowNum {
-  font-size:11px;
-  color:#666;
-  padding-left:6px;
+.step5Buttons{
+  display:flex;
+  gap:8px;
+}
+.step5Buttons button{
+  flex:1;
 }
 </style>
 </head>
@@ -125,180 +103,185 @@ button {
 <body>
 
 <div id="headerBar">
-  <h3 style="margin:0;">Pack Visualiser v4.2.2</h3>
-  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
-       style="height:40px;">
+  <h3>Pack Visualiser v4.2</h3>
 </div>
 
 <div class="panel">
 
-  <!-- STEP 1 -->
-  <div id="step1" class="step">
-    <label>Measured in</label>
-    <select id="mode">
-      <option value="boards">Boards</option>
-      <option value="linear">Linear</option>
-    </select>
+<select id="mode"></select>
 
-    <input id="boards" placeholder="Quantity of Boards"/>
-
-    <div id="linearWrap" class="hidden">
-      <input id="metres" placeholder="Linear Metres"/>
-      <select id="boardLength"></select>
-    </div>
-
-    <button onclick="nextStep()">Next</button>
-  </div>
-
-  <!-- STEP 2 -->
-  <div id="step2" class="step hidden">
-    <label>Boards per Row</label>
-    <select id="perRow"></select>
-    <button onclick="nextStep()">Next</button>
-  </div>
-
-  <!-- STEP 3 -->
-  <div id="step3" class="step hidden">
-    <label>Yield</label>
-    <select id="yield"></select>
-    <button onclick="nextStep()">Next</button>
-  </div>
-
-  <!-- STEP 4 -->
-  <div id="step4" class="step hidden">
-    <label>Loose Boards</label>
-    <select id="loose"></select>
-    <button onclick="nextStep()">View</button>
-  </div>
-
+<div id="step1" class="step">
+  <input id="boards" type="number" inputmode="numeric" placeholder="Quantity of Boards Required">
+  <input id="metres" type="number" inputmode="decimal" placeholder="Number of Linear Metres Required">
+  <select id="boardLength"></select>
 </div>
 
-<!-- STEP 5 -->
-<div id="step5" class="hidden">
+<div id="step2" class="step hidden">
+  <select id="perRow"></select>
+</div>
 
-  <div id="summary"></div>
-  <div class="grid" id="grid"></div>
+<div id="step3" class="step hidden">
+  <label>Yield (when bandsawing)</label>
+  <select id="yield"></select>
+</div>
 
-  <div style="display:flex; gap:8px;">
+<div id="step4" class="step hidden">
+  <select id="loose"></select>
+</div>
+
+<div id="step5_rejects" class="step hidden">
+  <select id="rejects"></select>
+
+  <div class="step5Buttons">
     <button onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
+</div>
+
+<div class="btnRow">
+  <button id="nextBtn" onclick="nextStep()">Next</button>
+</div>
 
 </div>
 
+<div id="summary"></div>
+<div id="grid" class="grid"></div>
+
 <script>
-let step = 1;
+let step=1;
 
-const mode = document.getElementById('mode');
-const boards = document.getElementById('boards');
-const metres = document.getElementById('metres');
-const boardLength = document.getElementById('boardLength');
-const perRow = document.getElementById('perRow');
-const yieldSel = document.getElementById('yield');
-const loose = document.getElementById('loose');
+const modeSel=document.getElementById('mode');
+['Boards','Linear'].forEach(v=>{
+  let o=document.createElement('option');
+  o.value=v.toLowerCase();
+  o.textContent=v;
+  modeSel.appendChild(o);
+});
 
-for(let i=1;i<=15;i++) perRow.innerHTML += `<option>${i}</option>`;
-for(let i=1;i<=6;i++) yieldSel.innerHTML += `<option>${i}</option>`;
-for(let i=0;i<=30;i++) loose.innerHTML += `<option>${i}</option>`;
+const perRowSel=document.getElementById('perRow');
+perRowSel.innerHTML='<option value="">How many boards per row?</option>';
+for(let i=1;i<=15;i++){
+  let o=document.createElement('option');
+  o.value=i;
+  o.textContent=i;
+  perRowSel.appendChild(o);
+}
+
+const yieldSel=document.getElementById('yield');
+for(let i=1;i<=6;i++){
+  let o=document.createElement('option');
+  o.value=i;
+  o.textContent=i;
+  yieldSel.appendChild(o);
+}
+
+const looseSel=document.getElementById('loose');
+const rejectsSel=document.getElementById('rejects');
+
+rejectsSel.innerHTML='<option value="">How many rejects?</option>';
+for(let i=0;i<=30;i++){
+  let o=document.createElement('option');
+  o.value=i;
+  o.textContent=i;
+  rejectsSel.appendChild(o);
+}
+
+function updateLoose(){
+  let per=+perRowSel.value||0;
+  looseSel.innerHTML='<option value="">How many loose boards on the pack?</option>';
+  for(let i=0;i<per;i++){
+    let o=document.createElement('option');
+    o.value=i;
+    o.textContent=i;
+    looseSel.appendChild(o);
+  }
+}
 
 function state(){
-  return {
-    mode:mode.value,
+  return{
     boards:+boards.value||0,
     metres:+metres.value||0,
-    boardLength:+boardLength.value||0,
-    perRow:+perRow.value||0,
+    perRow:+perRowSel.value||0,
     yield:+yieldSel.value||1,
-    loose:+loose.value||0
-  };
-}
-
-function basePieces(s){
-  return s.mode==='linear'
-    ? Math.ceil(s.metres/(s.boardLength||1))
-    : s.boards;
-}
-
-/* ✅ FIXED CORE LOGIC: rejects is SEPARATE again */
-function render(){
-  const s = state();
-
-  const base = basePieces(s);
-  const total = base + s.loose; // still separate input, but treated as extra demand
-  const phys = Math.ceil(total / s.yield);
-  const basePhys = Math.ceil(base / s.yield);
-
-  document.getElementById('summary').innerText =
-    `Base ${base} | Loose ${s.loose} | Total ${total}`;
-
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-
-  let count = 1;
-  let remaining = phys;
-  let rows = [];
-
-  while(remaining>0){
-    const cap = Math.min(s.perRow||1, remaining);
-    rows.push(cap);
-    remaining -= cap;
+    loose:looseSel.value===''?null:+looseSel.value,
+    rejects:+rejectsSel.value||0
   }
-
-  rows.forEach((cap,r)=>{
-    const row=document.createElement('div');
-    row.className='row';
-
-    let cells=[];
-    for(let c=0;c<s.perRow;c++){
-      const d=document.createElement('div');
-      const ok=c<cap && count<=phys;
-
-      if(ok){
-        d.className='cell'+(count>basePhys?' reject':'');
-        d.innerText=count++;
-      } else {
-        d.className='empty';
-      }
-
-      cells.push(d);
-    }
-
-    cells.reverse().forEach(x=>row.appendChild(x));
-
-    const rn=document.createElement('div');
-    rn.className='rowNum';
-    rn.innerText=r+1;
-    row.appendChild(rn);
-
-    grid.appendChild(row);
-  });
 }
 
-function show(){
+function nextStep(){
+  if(step<5) step++;
+  updateUI();
+}
+
+function prevStep(){
+  if(step>1) step--;
+  updateUI();
+}
+
+function updateUI(){
   document.querySelectorAll('.step').forEach((el,i)=>{
     el.classList.toggle('hidden',i!==step-1);
   });
-  document.getElementById('step5').classList.toggle('hidden',step!==5);
+
+  document.getElementById('nextBtn').style.display = step===5?'none':'block';
+
+  if(step===4) updateLoose();
+  if(step===5) render();
 }
 
-function nextStep(){ if(step<5) step++; show(); render(); }
-function prevStep(){ if(step>1) step--; show(); render(); }
+function render(){
+  let s=state();
+
+  let base=s.boards;
+  let total=base+s.rejects;
+
+  let rows=Math.ceil(total/s.perRow);
+
+  let grid=document.getElementById('grid');
+  grid.innerHTML='';
+
+  let count=1;
+
+  for(let r=0;r<rows;r++){
+    let row=document.createElement('div');
+    row.className='row';
+
+    let cap = r===0 && s.loose!==null ? s.loose : s.perRow;
+
+    for(let c=0;c<s.perRow;c++){
+      let d=document.createElement('div');
+
+      if(c<cap && count<=total){
+        d.className='cell'+(count>base?' reject':'');
+        d.innerText=count++;
+      }else{
+        d.className='empty';
+      }
+
+      row.appendChild(d);
+    }
+
+    grid.appendChild(row);
+  }
+
+  summary.innerText =
+    `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
+}
 
 function resetAll(){
   step=1;
   boards.value='';
   metres.value='';
-  perRow.value='';
-  loose.value='';
-  boardLength.value='';
-  show();
-  render();
+  perRowSel.value='';
+  yieldSel.value=1;
+  looseSel.value='';
+  rejectsSel.value='';
+  grid.innerHTML='';
+  summary.innerText='';
+  updateUI();
 }
 
-mode.onchange=()=>{ step=1; show(); render(); };
-
-show();
-render();
+updateUI();
 </script>
 
 </body>
