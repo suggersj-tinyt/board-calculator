@@ -22,7 +22,7 @@ body {
   margin-bottom:10px;
 }
 
-input, select {
+select, input {
   width:100%;
   max-width:360px;
   padding:10px;
@@ -39,6 +39,7 @@ button {
 
 .btnRow {
   display:flex;
+  flex-direction:column;
   gap:8px;
 }
 
@@ -94,36 +95,53 @@ button {
 
 <body>
 
-<div id="headerBar" style="display:flex; justify-content:space-between;">
-  <h3>Pack Visualiser V4.1</h3>
+<!-- HEADER (ALWAYS VISIBLE) -->
+<div id="headerBar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+  <h3 style="margin:0;">Pack Visualiser v4.2</h3>
+
+  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
+       style="height:40px;">
 </div>
 
 <div class="panel">
 
+  <!-- MODE -->
   <div id="modeBlock">
     <label>Measured in:</label>
     <select id="mode"></select>
   </div>
 
-  <div id="step1">
-    <input id="boards" type="number" placeholder="Boards" />
-    <input id="metres" type="number" placeholder="Metres" />
-    <select id="boardLength"></select>
+  <!-- STEP 1 -->
+  <div id="step1_boards" class="step">
+
+    <div id="boardsWrap">
+      <input id="boards" type="number" placeholder="Quantity of Boards Required">
+    </div>
+
+    <div id="linearWrap">
+      <input id="metres" type="number" placeholder="Number of Linear Metres Required">
+      <select id="boardLength"></select>
+    </div>
+
   </div>
 
-  <div id="step2">
+  <!-- STEP 2 -->
+  <div id="step2_perRow" class="step hidden">
     <select id="perRow"></select>
   </div>
 
-  <div id="step3">
+  <!-- STEP 3 -->
+  <div id="step3_yield" class="step hidden">
     <select id="yield"></select>
   </div>
 
-  <div id="step4">
+  <!-- STEP 4 -->
+  <div id="step4_loose" class="step hidden">
     <select id="topLoose"></select>
   </div>
 
-  <div id="step5" class="hidden">
+  <!-- STEP 5 -->
+  <div id="step5_rejects" class="step hidden">
     <select id="rejects"></select>
 
     <div class="step5Buttons">
@@ -132,9 +150,10 @@ button {
     </div>
   </div>
 
-  <div class="btnRow" id="navButtons">
-    <button onclick="nextStep()" id="nextBtn">Next</button>
-    <button onclick="prevStep()" id="backBtn">Back</button>
+  <!-- NAV -->
+  <div class="btnRow">
+    <button id="nextBtn" onclick="nextStep()">Next</button>
+    <button id="backBtn" onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
 
@@ -178,46 +197,63 @@ function state(){
     boardLength: +boardLength.value || 0,
     perRow: +perRowSel.value || 0,
     yield: +yieldSel.value || 1,
-    topLoose: looseSel.value === "" ? null : +looseSel.value,
+    topLoose: looseSel.value==="" ? null : +looseSel.value,
     rejects: +rejectsSel.value || 0
   };
 }
 
 function basePieces(s){
   return s.mode === "linear"
-    ? Math.ceil(s.metres / s.boardLength || 0)
+    ? Math.ceil((s.metres || 0) / (s.boardLength || 1))
     : s.boards;
 }
 
+/* ================= UI ================= */
+
 function updateUI(){
 
-  step1.classList.toggle('hidden', step !== 1 && step !== 5);
-  step2.classList.toggle('hidden', step !== 2 && step !== 5);
-  step3.classList.toggle('hidden', step !== 3 && step !== 5);
-  step4.classList.toggle('hidden', step !== 4 && step !== 5);
-  step5.classList.toggle('hidden', step !== 5);
+  const inStep5 = step === 5;
 
-  modeBlock.classList.toggle('hidden', step === 5);
-  navButtons.classList.toggle('hidden', step === 5);
+  // STEP VISIBILITY (explicit, no index bugs)
+  step1_boards.classList.toggle('hidden', inStep5 || step !== 1);
+  step2_perRow.classList.toggle('hidden', inStep5 || step !== 2);
+  step3_yield.classList.toggle('hidden', inStep5 || step !== 3);
+  step4_loose.classList.toggle('hidden', inStep5 || step !== 4);
+  step5_rejects.classList.toggle('hidden', !inStep5);
+
+  // MODE ONLY IN STEP 1–4
+  modeBlock.classList.toggle('hidden', inStep5);
+
+  // STEP 1 INPUT MODE SWITCH (CRITICAL FIX)
+  const isBoards = modeSel.value === "boards";
+  boardsWrap.classList.toggle('hidden', !isBoards);
+  linearWrap.classList.toggle('hidden', isBoards ? true : false);
+
+  // NAV BUTTONS
+  nextBtn.classList.toggle('hidden', step >= 5);
+  backBtn.classList.toggle('hidden', step <= 1);
+  document.querySelector('.btnRow').classList.toggle('hidden', inStep5);
 
   render();
 }
+
+/* ================= NAV ================= */
 
 function nextStep(){ if(step < 5) step++; updateUI(); }
 function prevStep(){ if(step > 1) step--; updateUI(); }
 
 function resetAll(){
   step = 1;
-
   boards.value = "";
   metres.value = "";
   boardLength.value = "";
   perRowSel.value = "";
   looseSel.value = "";
   rejectsSel.value = "";
-
   updateUI();
 }
+
+/* ================= RENDER ================= */
 
 function render(){
   const s = state();
@@ -226,6 +262,13 @@ function render(){
   summary.innerText =
     `Base: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
 }
+
+/* ================= INIT ================= */
+
+modeSel.innerHTML = `
+<option value="boards">Boards</option>
+<option value="linear">Linear</option>
+`;
 
 updateUI();
 
