@@ -154,7 +154,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.44)
+      Pack Visualiser (v3.45)
     </h3>
   </div>
 
@@ -387,10 +387,15 @@ function updateUI(){
   document.querySelectorAll('.step').forEach((el,i)=>
     el.classList.toggle('hidden',i!==step-1)
   );
-
+  
+document.getElementById('step1_boards')
+  .classList.toggle('hidden', step === 5);
+  
   document.getElementById('nextBtn').disabled=!canProceed();
   document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
   document.getElementById('backBtn').classList.toggle('hidden',step<=1);
+  document.querySelector('.btnRow')
+  .classList.toggle('hidden', step === 5);
 
   updateLooseOptions();
 }
