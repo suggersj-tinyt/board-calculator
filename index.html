@@ -12,7 +12,7 @@ body {
   background:#fff;
 }
 
-/* header */
+/* HEADER */
 #headerBar{
   background:#4caf50;
   color:#fff;
@@ -22,14 +22,12 @@ body {
   align-items:center;
 }
 
-/* layout */
 .panel{
   padding:12px;
 }
 
-.hidden{display:none}
+.hidden{display:none !important;}
 
-/* inputs */
 input, select{
   width:100%;
   max-width:360px;
@@ -80,7 +78,7 @@ button{
 }
 
 /* step 5 bottom bar */
-#step5_rejects{
+#step5{
   position:fixed;
   bottom:0;
   left:0;
@@ -102,34 +100,50 @@ button{
 
 <body>
 
+<!-- HEADER -->
 <div id="headerBar">
   <h3>Pack Visualiser v4.2</h3>
+  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
+       style="height:40px;">
 </div>
 
 <div class="panel">
 
+<label>Target Total is measured in:</label>
 <select id="mode"></select>
 
+<!-- STEP 1 -->
 <div id="step1" class="step">
-  <input id="boards" type="number" inputmode="numeric" placeholder="Quantity of Boards Required">
-  <input id="metres" type="number" inputmode="decimal" placeholder="Number of Linear Metres Required">
-  <select id="boardLength"></select>
+  <div id="boardsWrap">
+    <input id="boards" type="number" inputmode="numeric"
+      placeholder="Quantity of Boards Required">
+  </div>
+
+  <div id="linearWrap">
+    <input id="metres" type="number" inputmode="decimal"
+      placeholder="Number of Linear Metres Required">
+    <select id="boardLength"></select>
+  </div>
 </div>
 
+<!-- STEP 2 -->
 <div id="step2" class="step hidden">
   <select id="perRow"></select>
 </div>
 
+<!-- STEP 3 -->
 <div id="step3" class="step hidden">
   <label>Yield (when bandsawing)</label>
   <select id="yield"></select>
 </div>
 
+<!-- STEP 4 -->
 <div id="step4" class="step hidden">
   <select id="loose"></select>
 </div>
 
-<div id="step5_rejects" class="step hidden">
+<!-- STEP 5 -->
+<div id="step5" class="step hidden">
   <select id="rejects"></select>
 
   <div class="step5Buttons">
@@ -144,20 +158,36 @@ button{
 
 </div>
 
-<div id="summary"></div>
+<div id="summary" style="padding:10px;"></div>
 <div id="grid" class="grid"></div>
 
 <script>
 let step=1;
 
+const BOARD_LENGTHS=[2.4,2.7,3,3.3,3.6,3.9,4.2,4.5,4.8,5.1,5.4,5.7,6];
+
 const modeSel=document.getElementById('mode');
+const boardsWrap=document.getElementById('boardsWrap');
+const linearWrap=document.getElementById('linearWrap');
+
 ['Boards','Linear'].forEach(v=>{
   let o=document.createElement('option');
   o.value=v.toLowerCase();
   o.textContent=v;
   modeSel.appendChild(o);
 });
+modeSel.value='boards';
 
+const boardLengthSel=document.getElementById('boardLength');
+boardLengthSel.innerHTML='<option value="">Select Board Length</option>';
+BOARD_LENGTHS.forEach(v=>{
+  let o=document.createElement('option');
+  o.value=v;
+  o.textContent=v;
+  boardLengthSel.appendChild(o);
+});
+
+/* per row */
 const perRowSel=document.getElementById('perRow');
 perRowSel.innerHTML='<option value="">How many boards per row?</option>';
 for(let i=1;i<=15;i++){
@@ -167,6 +197,7 @@ for(let i=1;i<=15;i++){
   perRowSel.appendChild(o);
 }
 
+/* yield */
 const yieldSel=document.getElementById('yield');
 for(let i=1;i<=6;i++){
   let o=document.createElement('option');
@@ -175,9 +206,8 @@ for(let i=1;i<=6;i++){
   yieldSel.appendChild(o);
 }
 
-const looseSel=document.getElementById('loose');
+/* rejects */
 const rejectsSel=document.getElementById('rejects');
-
 rejectsSel.innerHTML='<option value="">How many rejects?</option>';
 for(let i=0;i<=30;i++){
   let o=document.createElement('option');
@@ -185,6 +215,9 @@ for(let i=0;i<=30;i++){
   o.textContent=i;
   rejectsSel.appendChild(o);
 }
+
+/* loose */
+const looseSel=document.getElementById('loose');
 
 function updateLoose(){
   let per=+perRowSel.value||0;
@@ -197,10 +230,13 @@ function updateLoose(){
   }
 }
 
+/* STATE */
 function state(){
   return{
+    mode:modeSel.value,
     boards:+boards.value||0,
     metres:+metres.value||0,
+    boardLength:+boardLengthSel.value||0,
     perRow:+perRowSel.value||0,
     yield:+yieldSel.value||1,
     loose:looseSel.value===''?null:+looseSel.value,
@@ -208,6 +244,16 @@ function state(){
   }
 }
 
+/* BASE CALC */
+function basePieces(s){
+  if(s.mode==='linear'){
+    if(!s.metres||!s.boardLength) return 0;
+    return Math.ceil(s.metres/s.boardLength);
+  }
+  return s.boards;
+}
+
+/* NAV */
 function nextStep(){
   if(step<5) step++;
   updateUI();
@@ -218,7 +264,13 @@ function prevStep(){
   updateUI();
 }
 
+/* UI */
 function updateUI(){
+  // mode toggle
+  boardsWrap.classList.toggle('hidden',modeSel.value!=='boards');
+  linearWrap.classList.toggle('hidden',modeSel.value!=='linear');
+
+  // step control
   document.querySelectorAll('.step').forEach((el,i)=>{
     el.classList.toggle('hidden',i!==step-1);
   });
@@ -229,13 +281,14 @@ function updateUI(){
   if(step===5) render();
 }
 
+/* RENDER */
 function render(){
   let s=state();
 
-  let base=s.boards;
+  let base=basePieces(s);
   let total=base+s.rejects;
 
-  let rows=Math.ceil(total/s.perRow);
+  let rows=Math.ceil(total/s.perRow||1);
 
   let grid=document.getElementById('grid');
   grid.innerHTML='';
@@ -246,7 +299,7 @@ function render(){
     let row=document.createElement('div');
     row.className='row';
 
-    let cap = r===0 && s.loose!==null ? s.loose : s.perRow;
+    let cap = (r===0 && s.loose!==null)? s.loose : s.perRow;
 
     for(let c=0;c<s.perRow;c++){
       let d=document.createElement('div');
@@ -265,9 +318,10 @@ function render(){
   }
 
   summary.innerText =
-    `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
+  `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
 }
 
+/* RESET */
 function resetAll(){
   step=1;
   boards.value='';
@@ -280,6 +334,8 @@ function resetAll(){
   summary.innerText='';
   updateUI();
 }
+
+modeSel.addEventListener('change',()=>{step=1;updateUI();});
 
 updateUI();
 </script>
