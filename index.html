@@ -157,7 +157,7 @@ button {
 
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.32)
+      Pack Visualiser (v3.33)
     </h3>
   </div>
 
@@ -383,8 +383,8 @@ function renderGhost(s){
     grid.appendChild(row);
   }
 
-  document.getElementById('summary').innerText =
-    `Rows: ${rows} | Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
+ document.getElementById('summary').innerText =
+  `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
 }
 
 function updateUI(){
