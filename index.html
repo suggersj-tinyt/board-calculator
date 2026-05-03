@@ -154,7 +154,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.45)
+      Pack Visualiser (v3.5)
     </h3>
   </div>
 
@@ -195,7 +195,9 @@ button {
   </div>
 
   <div id="step5_rejects" class="step hidden step5Bar">
-  <input id="rejects" type="number" placeholder="Rejects" />
+  <select id="rejects">
+  <option value="">Rejects</option>
+</select>
   <div class="step5Buttons">
     <button onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
@@ -262,6 +264,15 @@ function buildPerRow(){
   ph.selected=true;
   perRowSel.appendChild(ph);
 
+  const rejectsSel = document.getElementById('rejects');
+
+for (let i = 0; i <= 30; i++) {
+  const o = document.createElement('option');
+  o.value = i;
+  o.textContent = i;
+  rejectsSel.appendChild(o);
+}
+
   for(let i=1;i<=15;i++){
     const o=document.createElement('option');
     o.value=i;
@@ -285,7 +296,7 @@ function state(){
     perRow:+perRowSel.value||0,
     yield:+document.getElementById('yield').value||1,
     topLoose:looseRaw===''?null:parseInt(looseRaw),
-    rejects:+document.getElementById('rejects').value||0
+    rejects: +rejectsSel.value || 0,
   };
 }
 
