@@ -138,7 +138,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.52)
+      Pack Visualiser (v3.53)
     </h3>
   </div>
 
@@ -260,6 +260,22 @@ for (let i = 0; i <= 30; i++) {
   o.textContent = i;
   rejectsSel.appendChild(o);
 }
+rejectsSel.innerHTML = '';
+
+const ph = document.createElement('option');
+ph.value = '';
+ph.textContent = 'How many rejects?';
+ph.disabled = true;
+ph.selected = true;
+rejectsSel.appendChild(ph);
+
+for (let i = 0; i <= 30; i++) {
+  const o = document.createElement('option');
+  o.value = i;
+  o.textContent = i;
+  rejectsSel.appendChild(o);
+}
+
 rejectsSel.value = '';
 
 function state(){
@@ -330,7 +346,68 @@ function updateUI(){
 function nextStep(){ if(canProceed()) step++; updateUI(); render(); }
 function prevStep(){ if(step>1) step--; updateUI(); render(); }
 function clearGrid(){ document.getElementById('grid').innerHTML=''; }
-function render(){ clearGrid(); }
+function render(){
+  const s = state();
+
+  clearGrid();
+
+  const base = basePieces(s);
+  const total = base + s.rejects;
+  const phys = Math.ceil(total / s.yield);
+  const basePhys = Math.ceil(base / s.yield);
+
+  if(!s.perRow){
+    document.getElementById('summary').innerText = '';
+    return;
+  }
+
+  let rows = [];
+  let rem = phys;
+
+  if(s.topLoose !== null){
+    const t = Math.min(s.topLoose, rem);
+    rows.push(t);
+    rem -= t;
+  }
+
+  while(rem > 0){
+    const c = Math.min(s.perRow, rem);
+    rows.push(c);
+    rem -= c;
+  }
+
+  let count = 1;
+
+  rows.forEach((cap,r)=>{
+    const row = document.createElement('div');
+    row.className = 'row' + (r===0 ? ' loose' : '');
+
+    for(let c=0;c<s.perRow;c++){
+      const d = document.createElement('div');
+
+      const ok = c < cap && count <= phys;
+
+      if(ok){
+        d.className = 'cell' + (count > basePhys ? ' reject' : '');
+        d.innerText = count++;
+      } else {
+        d.className = 'empty';
+      }
+
+      row.appendChild(d);
+    }
+
+    const rn = document.createElement('div');
+    rn.className = 'rowNum';
+    rn.innerText = r+1;
+    row.appendChild(rn);
+
+    document.getElementById('grid').appendChild(row);
+  });
+
+  document.getElementById('summary').innerText =
+    `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total: ${total}`;
+}
 function resetAll(){ step=1; updateUI(); render(); }
 
 modeSel.addEventListener('change',()=>{ step=1; updateUI(); render(); });
