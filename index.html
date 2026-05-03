@@ -89,6 +89,22 @@ button {
   width:100%;
 }
 
+  .step5Bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.step5Buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.step5Buttons button {
+  flex: 1;
+  margin-top: 0;
+}
+  
 .row.loose {
   margin-bottom:12px;
 }
@@ -138,7 +154,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.43)
+      Pack Visualiser (v3.44)
     </h3>
   </div>
 
@@ -178,9 +194,13 @@ button {
     <select id="topLoose"></select>
   </div>
 
-  <div id="step5_rejects" class="step hidden">
-    <input id="rejects" type="number" placeholder="How many Rejects?" />
+  <div id="step5_rejects" class="step hidden step5Bar">
+  <input id="rejects" type="number" placeholder="Rejects" />
+  <div class="step5Buttons">
+    <button onclick="prevStep()">Back</button>
+    <button onclick="resetAll()">Reset</button>
   </div>
+</div>
 
   <div class="btnRow">
     <button id="nextBtn" onclick="nextStep()">Next</button>
