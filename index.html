@@ -5,16 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Board Calculator</title>
 
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#4caf50">
-
 <style>
 body {
   font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   margin: 12px;
   background:#fff;
   overflow-x:hidden;
-  padding-bottom: 120px;
 }
 
 .hidden { display:none !important; }
@@ -26,14 +22,6 @@ body {
   margin-bottom:10px;
 }
 
-select {
-  appearance:none;
-  -webkit-appearance:none;
-  background:#fff;
-  border:1px solid rgba(0,0,0,0.15);
-  border-radius:6px;
-}
-
 input, select {
   width:100%;
   max-width:360px;
@@ -42,53 +30,28 @@ input, select {
   box-sizing:border-box;
 }
 
-#linearWrap {
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-/* buttons */
 button {
-  appearance:none;
-  -webkit-appearance:none;
   width:100%;
   max-width:360px;
-  padding:12px 14px;
-  font-size:16px;
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,0.15);
-  background:#f5f5f5;
-  color:#333;
+  padding:12px;
   margin-top:6px;
 }
 
-/* step 5 fixed bar */
-#step5_rejects {
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  background:#fff;
-  border-top:1px solid rgba(0,0,0,0.15);
-  padding:10px 12px;
-  z-index:999;
+.btnRow {
   display:flex;
-  flex-direction:column;
-  gap:10px;
+  gap:8px;
 }
 
 .step5Buttons {
   display:flex;
   gap:8px;
+  margin-top:10px;
 }
 
 .step5Buttons button {
   flex:1;
-  margin-top:0;
 }
 
-/* grid */
 .grid {
   display:flex;
   flex-direction:column;
@@ -107,35 +70,32 @@ button {
 }
 
 .cell {
+  background:#8b5a2b;
+  color:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:11px;
-  background:#8b5a2b;
-  color:#fff;
-  border:1px solid rgba(0,0,0,0.15);
 }
 
 .empty {
-  border:1px dashed rgba(0,0,0,0.1);
+  border:1px dashed #ddd;
 }
 
 .reject { background:#f4a300 !important; }
 
 .rowNum {
   font-size:11px;
+  margin-left:6px;
   color:#666;
-  padding-left:8px;
 }
 </style>
 </head>
 
 <body>
 
-<div id="headerBar" style="display:flex; justify-content:space-between; margin-bottom:12px;">
-  <h3 style="margin:0;">Pack Visualiser V4</h3>
-  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
-       style="height:40px;" />
+<div id="headerBar" style="display:flex; justify-content:space-between;">
+  <h3>Pack Visualiser V4.1</h3>
 </div>
 
 <div class="panel">
@@ -145,174 +105,130 @@ button {
     <select id="mode"></select>
   </div>
 
-  <div id="step1_boards">
-    <div id="boardsWrap">
-      <input id="boards" type="number" placeholder="Boards required" />
-    </div>
-
-    <div id="linearWrap">
-      <input id="metres" type="number" placeholder="Linear metres required" />
-      <select id="boardLength"></select>
-    </div>
+  <div id="step1">
+    <input id="boards" type="number" placeholder="Boards" />
+    <input id="metres" type="number" placeholder="Metres" />
+    <select id="boardLength"></select>
   </div>
 
-  <div id="step2_perRow">
+  <div id="step2">
     <select id="perRow"></select>
   </div>
 
-  <div id="step3_yield">
+  <div id="step3">
     <select id="yield"></select>
   </div>
 
-  <div id="step4_loose">
+  <div id="step4">
     <select id="topLoose"></select>
   </div>
 
-</div>
+  <div id="step5" class="hidden">
+    <select id="rejects"></select>
 
-<!-- STEP 5 FIXED BOTTOM -->
-<div id="step5_rejects" class="hidden">
-  <select id="rejects"></select>
+    <div class="step5Buttons">
+      <button onclick="prevStep()">Back</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
+  </div>
 
-  <div class="step5Buttons">
-    <button onclick="prevStep()">Back</button>
+  <div class="btnRow" id="navButtons">
+    <button onclick="nextStep()" id="nextBtn">Next</button>
+    <button onclick="prevStep()" id="backBtn">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
+
 </div>
 
-<div class="btnRow">
-  <button id="nextBtn" onclick="nextStep()">Next</button>
-  <button id="backBtn" onclick="prevStep()">Back</button>
-  <button onclick="resetAll()">Reset</button>
-</div>
-
-<div id="summary" style="font-size:13px;margin-top:8px;color:#333;"></div>
+<div id="summary"></div>
 <div class="grid" id="grid"></div>
 
 <script>
+
 let step = 1;
 
 const modeSel = document.getElementById('mode');
+const perRowSel = document.getElementById('perRow');
+const yieldSel = document.getElementById('yield');
 const looseSel = document.getElementById('topLoose');
 const rejectsSel = document.getElementById('rejects');
 
-['Boards','Linear'].forEach(v=>{
-  const o=document.createElement('option');
-  o.value=v.toLowerCase();
-  o.textContent=v;
-  modeSel.appendChild(o);
-});
-modeSel.value='boards';
+modeSel.innerHTML = `
+<option value="boards">Boards</option>
+<option value="linear">Linear</option>
+`;
 
-const BOARD_LENGTHS=[2.4,2.7,3,3.3,3.6,3.9,4.2,4.5,4.8,5.1,5.4,5.7,6];
-const bl=document.getElementById('boardLength');
-BOARD_LENGTHS.forEach(v=>{
-  const o=document.createElement('option');
-  o.value=v;
-  o.textContent=v;
-  bl.appendChild(o);
-});
-
-const perRowSel=document.getElementById('perRow');
 for(let i=1;i<=15;i++){
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  perRowSel.appendChild(o);
+  perRowSel.innerHTML += `<option value="${i}">${i}</option>`;
+}
+
+for(let i=1;i<=6;i++){
+  yieldSel.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
 for(let i=0;i<=30;i++){
-  const o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  rejectsSel.appendChild(o);
+  rejectsSel.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
 function state(){
   return {
     mode: modeSel.value,
-    boards: +document.getElementById('boards').value || 0,
-    metres: +document.getElementById('metres').value || 0,
-    boardLength: +bl.value || 0,
+    boards: +boards.value || 0,
+    metres: +metres.value || 0,
+    boardLength: +boardLength.value || 0,
     perRow: +perRowSel.value || 0,
-    yield: 1,
-    topLoose: looseSel.value==='' ? null : +looseSel.value,
+    yield: +yieldSel.value || 1,
+    topLoose: looseSel.value === "" ? null : +looseSel.value,
     rejects: +rejectsSel.value || 0
   };
 }
 
 function basePieces(s){
-  return s.mode==='linear'
-    ? Math.ceil(s.metres/s.boardLength)
+  return s.mode === "linear"
+    ? Math.ceil(s.metres / s.boardLength || 0)
     : s.boards;
 }
 
 function updateUI(){
 
-  const inStep5 = step === 5;
+  step1.classList.toggle('hidden', step !== 1 && step !== 5);
+  step2.classList.toggle('hidden', step !== 2 && step !== 5);
+  step3.classList.toggle('hidden', step !== 3 && step !== 5);
+  step4.classList.toggle('hidden', step !== 4 && step !== 5);
+  step5.classList.toggle('hidden', step !== 5);
 
-  document.getElementById('boardsWrap').classList.toggle('hidden', modeSel.value!=='boards');
-  document.getElementById('linearWrap').classList.toggle('hidden', modeSel.value!=='linear');
+  modeBlock.classList.toggle('hidden', step === 5);
+  navButtons.classList.toggle('hidden', step === 5);
 
-  document.getElementById('step1_boards').classList.toggle('hidden', step!==1 || inStep5);
-  document.getElementById('step2_perRow').classList.toggle('hidden', step!==2 || inStep5);
-  document.getElementById('step3_yield').classList.toggle('hidden', step!==3 || inStep5);
-  document.getElementById('step4_loose').classList.toggle('hidden', step!==4 || inStep5);
-
-  document.getElementById('modeBlock').classList.toggle('hidden', inStep5);
-
-  document.getElementById('step5_rejects').classList.toggle('hidden', !inStep5);
-
-  document.getElementById('nextBtn').classList.toggle('hidden', inStep5);
-  document.querySelector('.btnRow').classList.toggle('hidden', inStep5);
-
-  updateLooseOptions();
-}
-
-function nextStep(){ if(step<5) step++; updateUI(); render(); }
-function prevStep(){ if(step>1) step--; updateUI(); render(); }
-
-function resetAll(){
-  step=1;
-  document.getElementById('boards').value='';
-  document.getElementById('metres').value='';
-  bl.value='';
-  perRowSel.value='';
-  looseSel.value='';
-  rejectsSel.value='';
-  modeSel.value='boards';
-  updateUI();
   render();
 }
 
+function nextStep(){ if(step < 5) step++; updateUI(); }
+function prevStep(){ if(step > 1) step--; updateUI(); }
+
+function resetAll(){
+  step = 1;
+
+  boards.value = "";
+  metres.value = "";
+  boardLength.value = "";
+  perRowSel.value = "";
+  looseSel.value = "";
+  rejectsSel.value = "";
+
+  updateUI();
+}
+
 function render(){
-  const s=state();
-  const base=basePieces(s);
-  const total=base+s.rejects;
+  const s = state();
+  const base = basePieces(s);
 
-  const grid=document.getElementById('grid');
-  grid.innerHTML='';
-
-  document.getElementById('summary').innerText=
-    `Base ${base} | Rejects ${s.rejects} | Total ${total}`;
+  summary.innerText =
+    `Base: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
 }
-
-function updateLooseOptions(){
-  const max = Math.max(0,(+perRowSel.value||0)-1);
-  looseSel.innerHTML='';
-  for(let i=0;i<=max;i++){
-    const o=document.createElement('option');
-    o.value=i;
-    o.textContent=i;
-    looseSel.appendChild(o);
-  }
-}
-
-modeSel.onchange=()=>{step=1;updateUI();render();};
-document.querySelectorAll('input,select').forEach(e=>e.oninput=()=>{updateUI();render();});
 
 updateUI();
-render();
+
 </script>
 
 </body>
