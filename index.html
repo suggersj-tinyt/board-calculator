@@ -131,7 +131,7 @@ button {
 <body>
 
 <div id="headerBar" style="display:flex; justify-content:space-between;">
-  <h3>Pack Visualiser (v5.3)</h3>
+  <h3>Pack Visualiser (v5.4)</h3>
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" style="height:40px;">
 </div>
 
@@ -153,6 +153,7 @@ button {
 </div>
 
 <div id="step2_perRow" class="step hidden">
+
 <div id="boardLengthWrap" class="hidden">
 <select id="boardLength"></select>
 </div>
@@ -160,6 +161,7 @@ button {
 <div id="perRowWrap" class="hidden">
 <select id="perRow"></select>
 </div>
+
 </div>
 
 <div id="step3_yield" class="step hidden">
@@ -195,7 +197,9 @@ let step = 1;
 
 const modeSel = document.getElementById('mode');
 const perRowSel = document.getElementById('perRow');
+const yieldSel = document.getElementById('yield');
 
+/* mode */
 ['Boards','Linear'].forEach(v=>{
   const o=document.createElement('option');
   o.value=v.toLowerCase();
@@ -204,8 +208,17 @@ const perRowSel = document.getElementById('perRow');
 });
 modeSel.value='boards';
 
+/* per row WITH placeholder */
 function buildPerRow(){
   perRowSel.innerHTML='';
+
+  const ph=document.createElement('option');
+  ph.value='';
+  ph.textContent='How many boards per row?';
+  ph.disabled=true;
+  ph.selected=true;
+  perRowSel.appendChild(ph);
+
   for(let i=1;i<=15;i++){
     const o=document.createElement('option');
     o.value=i;
@@ -214,6 +227,15 @@ function buildPerRow(){
   }
 }
 buildPerRow();
+
+/* ✅ yield rebuilt */
+for(let i=1;i<=6;i++){
+  const o=document.createElement('option');
+  o.value=i;
+  o.textContent=i;
+  yieldSel.appendChild(o);
+}
+yieldSel.value = 1;
 
 function state(){
   return {
@@ -258,7 +280,6 @@ function updateUI(){
 
   document.getElementById('nextBtn').disabled=!canProceed();
 
-  /* ✅ FIX: SHOW CORRECT STEP 2 CONTENT */
   if(step === 2){
     document.getElementById('boardLengthWrap')
       .classList.toggle('hidden', s.mode !== 'linear');
