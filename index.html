@@ -3,341 +3,275 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Pack Visualiser v4.2</title>
+<title>Board Calculator</title>
 
 <style>
 body {
-  font-family: Avenir, "Segoe UI", Arial;
-  margin:0;
+  font-family: Avenir, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+  margin: 12px;
   background:#fff;
+  overflow-x:hidden;
 }
 
-/* HEADER */
-#headerBar{
-  background:#4caf50;
-  color:#fff;
-  padding:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.hidden { display:none !important; }
+
+.panel {
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  margin-bottom:10px;
 }
 
-.panel{
-  padding:12px;
-}
-
-.hidden{display:none !important;}
-
-input, select{
+select, input {
   width:100%;
   max-width:360px;
-  padding:12px;
-  font-size:16px;
-  margin-top:10px;
-}
-
-/* buttons */
-button{
-  width:100%;
-  max-width:360px;
-  padding:12px;
-  margin-top:10px;
-  font-size:16px;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-
-.btnRow{
-  margin-top:10px;
-}
-
-/* grid */
-.grid{
   padding:10px;
+  font-size:16px;
+  box-sizing:border-box;
 }
 
-.row{
+button {
+  width:100%;
+  max-width:360px;
+  padding:12px;
+  margin-top:6px;
+}
+
+.btnRow {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.step5Buttons {
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+
+.step5Buttons button {
+  flex:1;
+}
+
+.grid {
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:12px;
+}
+
+.row {
   display:flex;
   gap:4px;
 }
 
-.cell{
+.cell, .empty {
   flex:1;
+  aspect-ratio:3/1;
+}
+
+.cell {
   background:#8b5a2b;
   color:#fff;
-  text-align:center;
-  padding:6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-size:11px;
 }
 
-.reject{background:#f4a300}
-
-.empty{
-  flex:1;
-  border:1px dashed #ccc;
+.empty {
+  border:1px dashed #ddd;
 }
 
-/* step 5 bottom bar */
-#step5{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#fff;
-  border-top:1px solid #ccc;
-  padding:10px;
-}
+.reject { background:#f4a300 !important; }
 
-.step5Buttons{
-  display:flex;
-  gap:8px;
-}
-.step5Buttons button{
-  flex:1;
+.rowNum {
+  font-size:11px;
+  margin-left:6px;
+  color:#666;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div id="headerBar">
-  <h3>Pack Visualiser v4.2</h3>
+<!-- HEADER (ALWAYS VISIBLE) -->
+<div id="headerBar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+  <h3 style="margin:0;">Pack Visualiser v4.2</h3>
+
   <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
        style="height:40px;">
 </div>
 
 <div class="panel">
 
-<label>Target Total is measured in:</label>
-<select id="mode"></select>
-
-<!-- STEP 1 -->
-<div id="step1" class="step">
-  <div id="boardsWrap">
-    <input id="boards" type="number" inputmode="numeric"
-      placeholder="Quantity of Boards Required">
+  <!-- MODE -->
+  <div id="modeBlock">
+    <label>Measured in:</label>
+    <select id="mode"></select>
   </div>
 
-  <div id="linearWrap">
-    <input id="metres" type="number" inputmode="decimal"
-      placeholder="Number of Linear Metres Required">
-    <select id="boardLength"></select>
+  <!-- STEP 1 -->
+  <div id="step1_boards" class="step">
+
+    <div id="boardsWrap">
+      <input id="boards" type="number" placeholder="Quantity of Boards Required">
+    </div>
+
+    <div id="linearWrap">
+      <input id="metres" type="number" placeholder="Number of Linear Metres Required">
+      <select id="boardLength"></select>
+    </div>
+
   </div>
-</div>
 
-<!-- STEP 2 -->
-<div id="step2" class="step hidden">
-  <select id="perRow"></select>
-</div>
+  <!-- STEP 2 -->
+  <div id="step2_perRow" class="step hidden">
+    <select id="perRow"></select>
+  </div>
 
-<!-- STEP 3 -->
-<div id="step3" class="step hidden">
-  <label>Yield (when bandsawing)</label>
-  <select id="yield"></select>
-</div>
+  <!-- STEP 3 -->
+  <div id="step3_yield" class="step hidden">
+    <select id="yield"></select>
+  </div>
 
-<!-- STEP 4 -->
-<div id="step4" class="step hidden">
-  <select id="loose"></select>
-</div>
+  <!-- STEP 4 -->
+  <div id="step4_loose" class="step hidden">
+    <select id="topLoose"></select>
+  </div>
 
-<!-- STEP 5 -->
-<div id="step5" class="step hidden">
-  <select id="rejects"></select>
+  <!-- STEP 5 -->
+  <div id="step5_rejects" class="step hidden">
+    <select id="rejects"></select>
 
-  <div class="step5Buttons">
-    <button onclick="prevStep()">Back</button>
+    <div class="step5Buttons">
+      <button onclick="prevStep()">Back</button>
+      <button onclick="resetAll()">Reset</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
+  <div class="btnRow">
+    <button id="nextBtn" onclick="nextStep()">Next</button>
+    <button id="backBtn" onclick="prevStep()">Back</button>
     <button onclick="resetAll()">Reset</button>
   </div>
-</div>
-
-<div class="btnRow">
-  <button id="nextBtn" onclick="nextStep()">Next</button>
-</div>
 
 </div>
 
-<div id="summary" style="padding:10px;"></div>
-<div id="grid" class="grid"></div>
+<div id="summary"></div>
+<div class="grid" id="grid"></div>
 
 <script>
-let step=1;
 
-const BOARD_LENGTHS=[2.4,2.7,3,3.3,3.6,3.9,4.2,4.5,4.8,5.1,5.4,5.7,6];
+let step = 1;
 
-const modeSel=document.getElementById('mode');
-const boardsWrap=document.getElementById('boardsWrap');
-const linearWrap=document.getElementById('linearWrap');
+const modeSel = document.getElementById('mode');
+const perRowSel = document.getElementById('perRow');
+const yieldSel = document.getElementById('yield');
+const looseSel = document.getElementById('topLoose');
+const rejectsSel = document.getElementById('rejects');
 
-['Boards','Linear'].forEach(v=>{
-  let o=document.createElement('option');
-  o.value=v.toLowerCase();
-  o.textContent=v;
-  modeSel.appendChild(o);
-});
-modeSel.value='boards';
+modeSel.innerHTML = `
+<option value="boards">Boards</option>
+<option value="linear">Linear</option>
+`;
 
-const boardLengthSel=document.getElementById('boardLength');
-boardLengthSel.innerHTML='<option value="">Select Board Length</option>';
-BOARD_LENGTHS.forEach(v=>{
-  let o=document.createElement('option');
-  o.value=v;
-  o.textContent=v;
-  boardLengthSel.appendChild(o);
-});
-
-/* per row */
-const perRowSel=document.getElementById('perRow');
-perRowSel.innerHTML='<option value="">How many boards per row?</option>';
 for(let i=1;i<=15;i++){
-  let o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  perRowSel.appendChild(o);
+  perRowSel.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
-/* yield */
-const yieldSel=document.getElementById('yield');
 for(let i=1;i<=6;i++){
-  let o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  yieldSel.appendChild(o);
+  yieldSel.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
-/* rejects */
-const rejectsSel=document.getElementById('rejects');
-rejectsSel.innerHTML='<option value="">How many rejects?</option>';
 for(let i=0;i<=30;i++){
-  let o=document.createElement('option');
-  o.value=i;
-  o.textContent=i;
-  rejectsSel.appendChild(o);
+  rejectsSel.innerHTML += `<option value="${i}">${i}</option>`;
 }
 
-/* loose */
-const looseSel=document.getElementById('loose');
-
-function updateLoose(){
-  let per=+perRowSel.value||0;
-  looseSel.innerHTML='<option value="">How many loose boards on the pack?</option>';
-  for(let i=0;i<per;i++){
-    let o=document.createElement('option');
-    o.value=i;
-    o.textContent=i;
-    looseSel.appendChild(o);
-  }
-}
-
-/* STATE */
 function state(){
-  return{
-    mode:modeSel.value,
-    boards:+boards.value||0,
-    metres:+metres.value||0,
-    boardLength:+boardLengthSel.value||0,
-    perRow:+perRowSel.value||0,
-    yield:+yieldSel.value||1,
-    loose:looseSel.value===''?null:+looseSel.value,
-    rejects:+rejectsSel.value||0
-  }
+  return {
+    mode: modeSel.value,
+    boards: +boards.value || 0,
+    metres: +metres.value || 0,
+    boardLength: +boardLength.value || 0,
+    perRow: +perRowSel.value || 0,
+    yield: +yieldSel.value || 1,
+    topLoose: looseSel.value==="" ? null : +looseSel.value,
+    rejects: +rejectsSel.value || 0
+  };
 }
 
-/* BASE CALC */
 function basePieces(s){
-  if(s.mode==='linear'){
-    if(!s.metres||!s.boardLength) return 0;
-    return Math.ceil(s.metres/s.boardLength);
-  }
-  return s.boards;
+  return s.mode === "linear"
+    ? Math.ceil((s.metres || 0) / (s.boardLength || 1))
+    : s.boards;
 }
 
-/* NAV */
-function nextStep(){
-  if(step<5) step++;
-  updateUI();
-}
+/* ================= UI ================= */
 
-function prevStep(){
-  if(step>1) step--;
-  updateUI();
-}
-
-/* UI */
 function updateUI(){
-  // mode toggle
-  boardsWrap.classList.toggle('hidden',modeSel.value!=='boards');
-  linearWrap.classList.toggle('hidden',modeSel.value!=='linear');
 
-  // step control
-  document.querySelectorAll('.step').forEach((el,i)=>{
-    el.classList.toggle('hidden',i!==step-1);
-  });
+  const inStep5 = step === 5;
 
-  document.getElementById('nextBtn').style.display = step===5?'none':'block';
+  // STEP VISIBILITY (explicit, no index bugs)
+  step1_boards.classList.toggle('hidden', inStep5 || step !== 1);
+  step2_perRow.classList.toggle('hidden', inStep5 || step !== 2);
+  step3_yield.classList.toggle('hidden', inStep5 || step !== 3);
+  step4_loose.classList.toggle('hidden', inStep5 || step !== 4);
+  step5_rejects.classList.toggle('hidden', !inStep5);
 
-  if(step===4) updateLoose();
-  if(step===5) render();
+  // MODE ONLY IN STEP 1–4
+  modeBlock.classList.toggle('hidden', inStep5);
+
+  // STEP 1 INPUT MODE SWITCH (CRITICAL FIX)
+  const isBoards = modeSel.value === "boards";
+  boardsWrap.classList.toggle('hidden', !isBoards);
+  linearWrap.classList.toggle('hidden', isBoards ? true : false);
+
+  // NAV BUTTONS
+  nextBtn.classList.toggle('hidden', step >= 5);
+  backBtn.classList.toggle('hidden', step <= 1);
+  document.querySelector('.btnRow').classList.toggle('hidden', inStep5);
+
+  render();
 }
 
-/* RENDER */
+/* ================= NAV ================= */
+
+function nextStep(){ if(step < 5) step++; updateUI(); }
+function prevStep(){ if(step > 1) step--; updateUI(); }
+
+function resetAll(){
+  step = 1;
+  boards.value = "";
+  metres.value = "";
+  boardLength.value = "";
+  perRowSel.value = "";
+  looseSel.value = "";
+  rejectsSel.value = "";
+  updateUI();
+}
+
+/* ================= RENDER ================= */
+
 function render(){
-  let s=state();
-
-  let base=basePieces(s);
-  let total=base+s.rejects;
-
-  let rows=Math.ceil(total/s.perRow||1);
-
-  let grid=document.getElementById('grid');
-  grid.innerHTML='';
-
-  let count=1;
-
-  for(let r=0;r<rows;r++){
-    let row=document.createElement('div');
-    row.className='row';
-
-    let cap = (r===0 && s.loose!==null)? s.loose : s.perRow;
-
-    for(let c=0;c<s.perRow;c++){
-      let d=document.createElement('div');
-
-      if(c<cap && count<=total){
-        d.className='cell'+(count>base?' reject':'');
-        d.innerText=count++;
-      }else{
-        d.className='empty';
-      }
-
-      row.appendChild(d);
-    }
-
-    grid.appendChild(row);
-  }
+  const s = state();
+  const base = basePieces(s);
 
   summary.innerText =
-  `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
+    `Base: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
 }
 
-/* RESET */
-function resetAll(){
-  step=1;
-  boards.value='';
-  metres.value='';
-  perRowSel.value='';
-  yieldSel.value=1;
-  looseSel.value='';
-  rejectsSel.value='';
-  grid.innerHTML='';
-  summary.innerText='';
-  updateUI();
-}
+/* ================= INIT ================= */
 
-modeSel.addEventListener('change',()=>{step=1;updateUI();});
+modeSel.innerHTML = `
+<option value="boards">Boards</option>
+<option value="linear">Linear</option>
+`;
 
 updateUI();
+
 </script>
 
 </body>
