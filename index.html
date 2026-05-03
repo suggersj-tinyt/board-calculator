@@ -157,7 +157,7 @@ button {
 
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.33)
+      Pack Visualiser (v3.34)
     </h3>
   </div>
 
@@ -384,7 +384,7 @@ function renderGhost(s){
   }
 
  document.getElementById('summary').innerText =
-  `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
+  `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${base + s.rejects}`;
 }
 
 function updateUI(){
@@ -486,8 +486,8 @@ function render(){
     document.getElementById('grid').appendChild(row);
   });
 
-  document.getElementById('summary').innerText=
-  `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
+  document.getElementById('summary').innerText =
+  `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${total}`;
 }
 
 function resetAll(){
