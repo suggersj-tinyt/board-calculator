@@ -138,7 +138,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.51)
+      Pack Visualiser (v3.52)
     </h3>
   </div>
 
@@ -336,6 +336,37 @@ function resetAll(){ step=1; updateUI(); render(); }
 modeSel.addEventListener('change',()=>{ step=1; updateUI(); render(); });
 document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>{ updateUI(); render(); }));
 
+  function updateLooseOptions(){
+  const s = state();
+
+  const sel = looseSel;
+  const prev = sel.value;
+
+  sel.innerHTML = '';
+
+  const ph = document.createElement('option');
+  ph.value = '';
+  ph.textContent = 'How many loose boards on the pack?';
+  ph.disabled = true;
+  ph.selected = true;
+  sel.appendChild(ph);
+
+  const max = s.perRow ? Math.max(0, s.perRow - 1) : 0;
+
+  for (let i = 0; i <= max; i++) {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = i;
+    sel.appendChild(o);
+  }
+
+  if (prev !== '' && Number(prev) <= max) {
+    sel.value = prev;
+  } else {
+    sel.value = '';
+  }
+}
+  
 updateUI(); render();
 </script>
 
