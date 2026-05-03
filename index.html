@@ -13,7 +13,7 @@ body {
   background:#fff;
   overflow-x:hidden;
 
-  /* prevents Step 5 bar overlapping content */
+  /* space for fixed Step 5 bar */
   padding-bottom: 110px;
 }
 
@@ -64,11 +64,10 @@ button {
   color:#333;
   margin-top:6px;
   cursor:pointer;
-  transition: background 0.15s ease, transform 0.05s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-/* top nav buttons */
+/* top navigation buttons */
 .btnRow {
   display:flex;
   flex-direction:column;
@@ -136,7 +135,7 @@ button {
 }
 
 /* =========================
-   STEP 5 FIXED CONTROL BAR
+   STEP 5 FIXED BOTTOM BAR
    ========================= */
 
 #step5_rejects {
@@ -170,13 +169,12 @@ button {
 }
 </style>
 </head>
-
 <body>
 
 <div id="headerBar" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.59)
+      Pack Visualiser (v3.6)
     </h3>
   </div>
 
