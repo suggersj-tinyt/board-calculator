@@ -152,7 +152,7 @@ button {
 <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.55)
+      Pack Visualiser (v3.56)
     </h3>
   </div>
 
@@ -427,7 +427,29 @@ cells.reverse().forEach(x => row.appendChild(x));
   document.getElementById('summary').innerText =
     `Rows: ${rows.length} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total: ${total}`;
 }
-function resetAll(){ step=1; updateUI(); render(); }
+function resetAll(){
+  step = 1;
+
+  // text inputs
+  document.getElementById('boards').value = '';
+  document.getElementById('metres').value = '';
+
+  // selects
+  modeSel.value = 'boards';
+  bl.value = '';
+  yieldSel.value = 1;
+
+  perRowSel.value = '';
+  looseSel.value = '';
+  rejectsSel.value = '';
+
+  // IMPORTANT: force summary + grid reset
+  clearGrid();
+
+  // re-render UI cleanly
+  updateUI();
+  render();
+}
 
 modeSel.addEventListener('change',()=>{ step=1; updateUI(); render(); });
 document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>{ updateUI(); render(); }));
