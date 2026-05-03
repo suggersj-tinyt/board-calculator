@@ -149,10 +149,10 @@ button {
 
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
+<div id="headerBar" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
   <div style="display:flex; flex-direction:column; gap:6px;">
     <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.56)
+      Pack Visualiser (v3.57)
     </h3>
   </div>
 
@@ -345,6 +345,9 @@ function updateUI(){
 
   document.getElementById('step1_boards')
     .classList.toggle('hidden', step === 5);
+  
+  document.getElementById('headerBar')
+  .classList.toggle('hidden', step === 5);
 
   document.getElementById('nextBtn').disabled=!canProceed();
   document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
