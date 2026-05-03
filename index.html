@@ -362,29 +362,44 @@ function canProceed(){
 }
 
 function updateUI(){
-  document.getElementById('boardsWrap').classList.toggle('hidden',modeSel.value!=='boards');
-  document.getElementById('linearWrap').classList.toggle('hidden',modeSel.value!=='linear');
+  const inStep5 = step === 5;
 
-  document.querySelectorAll('.step').forEach((el,i)=>
-    el.classList.toggle('hidden',i!==step-1)
+  // Mode-specific inputs (Boards vs Linear)
+  document.getElementById('boardsWrap')
+    .classList.toggle('hidden', modeSel.value !== 'boards');
+
+  document.getElementById('linearWrap')
+    .classList.toggle('hidden', modeSel.value !== 'linear');
+
+  // Step visibility (core flow)
+  document.querySelectorAll('.step').forEach((el, i) =>
+    el.classList.toggle('hidden', i !== step - 1)
   );
 
+  // 🔴 FIX 1: Step 1 should ONLY show on step 1
   document.getElementById('step1_boards')
-    .classList.toggle('hidden', step === 5);
-  
+    .classList.toggle('hidden', step !== 1);
+
+  // 🔴 FIX 2: NEVER hide header (you want logo/title always visible)
   document.getElementById('headerBar')
-  .classList.toggle('hidden', step === 5);
+    .classList.remove('hidden');
 
+  // Hide mode selector in Step 5 only
   document.getElementById('modeBlock')
-  .classList.toggle('hidden', step === 5);
+    .classList.toggle('hidden', inStep5);
 
-  document.getElementById('nextBtn').disabled=!canProceed();
-  document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
-  document.getElementById('backBtn').classList.toggle('hidden',step<=1);
+  // Navigation buttons
+  document.getElementById('nextBtn').disabled = !canProceed();
+  document.getElementById('nextBtn')
+    .classList.toggle('hidden', inStep5);
+
+  document.getElementById('backBtn')
+    .classList.toggle('hidden', step <= 1);
 
   document.querySelector('.btnRow')
-    .classList.toggle('hidden', step === 5);
+    .classList.toggle('hidden', inStep5);
 
+  // Keep loose options synced
   updateLooseOptions();
 }
 
