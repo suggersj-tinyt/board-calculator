@@ -23,72 +23,26 @@ body {
   margin-bottom:10px;
 }
 
-  select {
-  appearance: none;
-  -webkit-appearance: none;
-
-  color: #000;
-  background-color: #fff;
-
-  border: 1px solid rgba(0,0,0,0.15);
-  border-radius: 6px;
-}
-
-  
 input, select {
   width:100%;
-  max-width:360px;
   padding:10px;
   font-size:16px;
-  box-sizing:border-box;
-
 }
 
-  #linearWrap {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-  
 .hidden { display:none !important; }
 
 button {
-  appearance: none;
-  -webkit-appearance: none;
-
-  width: 100%;
-  max-width: 360px;
-
-  padding: 12px 14px;
-  font-size: 16px;
-  font-weight: 500;
-
-  border-radius: 10px;
-  border: 1px solid rgba(0,0,0,0.15);
-  background: #f5f5f5;
-  color: #333;
-
-  margin-top: 6px;
-
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.05s ease;
-
-  -webkit-tap-highlight-color: transparent;
+  padding:14px;
+  width:100%;
+  margin-top:8px;
+  font-size:16px;
 }
+
 .btnRow {
   display:flex;
   flex-direction:column;
   gap:8px;
   margin-top:6px;
-
-  #metres {
-  max-width: 100%;
-}
-
-  #boardLength {
-  max-width: 100%;
-}
-  
 }
 
 .grid {
@@ -148,34 +102,42 @@ button {
   min-width:20px;
   flex:0 0 auto;
 }
+
+/* NEW: compact bar styles */
+.compactBar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+
+.compactBar input {
+  flex: 1;
+  max-width: 120px;
+}
+
+.compactBar button {
+  flex: 0 0 auto;
+  max-width: 100px;
+  padding: 10px 12px;
+}
 </style>
 </head>
 
 <body>
 
-<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:12px;">
-
-  <div style="display:flex; flex-direction:column; gap:6px;">
-    <h3 style="margin:0; line-height:1.2;">
-      Pack Visualiser (v3.34)
-    </h3>
-  </div>
-
-  <img
-    src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/"
-    alt="Logo"
-    style="height:40px; width:auto; object-fit:contain;"
-  />
-
+<div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+  <h3 style="margin:0;">Pack Visualiser (v4.0)</h3>
+  <img src="https://static1.squarespace.com/static/5edd6c658f45a62c80cc5bee/t/648b901ba727837ab5445bef/1776199641436/" alt="Logo" style="height:28px; width:auto; object-fit:contain;" />
 </div>
 
 <div class="panel">
 
-  <label>Target Total is measured in:</label>
+  <label>I am measuring:</label>
   <select id="mode"></select>
 
   <div id="step1_boards" class="step">
-
     <div id="boardsWrap">
       <input id="boards" type="number" placeholder="Quantity of Boards Required" />
     </div>
@@ -184,25 +146,28 @@ button {
       <input id="metres" type="number" placeholder="Number of Linear Metres Required" />
       <select id="boardLength"></select>
     </div>
-
   </div>
 
   <div id="step2_perRow" class="step hidden">
     <select id="perRow"></select>
   </div>
 
-  <div id="step3_yield" class="step hidden yieldField">
-  <label for="yield">Board Yield (use when bandsawing)</label>
-  <select id="yield"></select>
-</div>
+  <div id="step3_yield" class="step hidden">
+    <label>Yield (when bandsawing)</label>
+    <select id="yield"></select>
+  </div>
 
   <div id="step4_loose" class="step hidden">
     <select id="topLoose"></select>
   </div>
 
-  <div id="step5_rejects" class="step hidden">
-  <input id="rejects" type="number" placeholder="How many Rejects?" />
-</div>
+  <!-- UPDATED STEP 5 -->
+  <div id="step5_rejects" class="step hidden compactBar">
+    <input id="rejects" type="number" placeholder="Rejects" />
+    <button id="backBtn" onclick="prevStep()">Back</button>
+    <button onclick="resetAll()">Reset</button>
+  </div>
+
   <div class="btnRow">
     <button id="nextBtn" onclick="nextStep()">Next</button>
     <button id="backBtn" onclick="prevStep()">Back</button>
@@ -220,36 +185,30 @@ let step=1;
 const BOARD_LENGTHS=["Select Board Length",2.4,2.7,3,3.3,3.6,3.7,3.9,4.2,4.5,4.8,4.9,5.1,5.4,5.7,6];
 
 const modeSel=document.getElementById('mode');
-
 ['Boards','Linear'].forEach(v=>{
   const o=document.createElement('option');
   o.value=v.toLowerCase();
   o.textContent=v;
   modeSel.appendChild(o);
 });
-
 modeSel.value='boards';
 
 const bl=document.getElementById('boardLength');
-
 BOARD_LENGTHS.forEach(v=>{
   const o=document.createElement('option');
   o.value=v==='Select Board Length'?"":v;
   o.textContent=v;
   bl.appendChild(o);
 });
-
 bl.value="";
 
 const yieldSel=document.getElementById('yield');
-
 for(let i=1;i<=6;i++){
   const o=document.createElement('option');
   o.value=i;
   o.textContent=i;
   yieldSel.appendChild(o);
 }
-
 yieldSel.value=1;
 
 const perRowSel=document.getElementById('perRow');
@@ -270,7 +229,6 @@ function buildPerRow(){
     perRowSel.appendChild(o);
   }
 }
-
 buildPerRow();
 
 const looseSel=document.getElementById('topLoose');
@@ -307,13 +265,10 @@ function canProceed(){
   const s=state();
 
   if(step===1){
-    return s.mode==='boards'
-      ? s.boards>0
-      : (s.metres>0 && s.boardLength>0);
+    return s.mode==='boards' ? s.boards>0 : (s.metres>0 && s.boardLength>0);
   }
 
   if(step===2) return s.perRow>0;
-
   if(step===4) return s.topLoose!==null;
 
   return true;
@@ -327,7 +282,6 @@ function calcRows(s,base){
 function updateLooseOptions(){
   const s=state();
   const base=basePieces(s);
-
   if(!base||!s.perRow) return;
 
   const max=Math.max(0, s.perRow - 1);
@@ -338,7 +292,7 @@ function updateLooseOptions(){
 
   const ph=document.createElement('option');
   ph.value='';
-  ph.textContent='How many loose boards on the pack?';
+  ph.textContent='How many loose boards?';
   ph.disabled=true;
   ph.selected=true;
   sel.appendChild(ph);
@@ -362,7 +316,6 @@ function renderGhost(s){
 
   const rows = 10;
   const per = s.perRow;
-
   const grid = document.getElementById('grid');
 
   for (let r = 0; r < rows; r++){
@@ -383,21 +336,21 @@ function renderGhost(s){
     grid.appendChild(row);
   }
 
- document.getElementById('summary').innerText =
-  `Rows: ${rows} | Base Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total Boards: ${base + s.rejects}`;
+  document.getElementById('summary').innerText=
+    `Rows: ${rows} | Boards: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects}`;
 }
 
 function updateUI(){
   document.getElementById('boardsWrap').classList.toggle('hidden',modeSel.value!=='boards');
   document.getElementById('linearWrap').classList.toggle('hidden',modeSel.value!=='linear');
 
-  document.querySelectorAll('.step').forEach((el,i)=>
-    el.classList.toggle('hidden',i!==step-1)
-  );
+  document.querySelectorAll('.step').forEach((el,i)=>el.classList.toggle('hidden',i!==step-1));
 
   document.getElementById('nextBtn').disabled=!canProceed();
   document.getElementById('nextBtn').classList.toggle('hidden',step>=5);
   document.getElementById('backBtn').classList.toggle('hidden',step<=1);
+
+  document.querySelector('.btnRow').classList.toggle('hidden', step === 5);
 
   updateLooseOptions();
 }
@@ -405,15 +358,10 @@ function updateUI(){
 function nextStep(){
   if(!canProceed()) return;
   if(step<5) step++;
-  updateUI();
-  render();
+  updateUI(); render();
 }
 
-function prevStep(){
-  if(step>1) step--;
-  updateUI();
-  render();
-}
+function prevStep(){ if(step>1) step--; updateUI(); render(); }
 
 function clearGrid(){
   document.getElementById('grid').innerHTML='';
@@ -468,9 +416,7 @@ function render(){
       if(ok){
         d.className='cell'+(count>basePhys?' reject':'');
         d.innerText=count++;
-      } else {
-        d.className='empty';
-      }
+      } else d.className='empty';
 
       cells.push(d);
     }
@@ -486,13 +432,12 @@ function render(){
     document.getElementById('grid').appendChild(row);
   });
 
-  document.getElementById('summary').innerText =
-  `Rows: ${rows.length} | Target: ${base} | Per Row: ${s.perRow} | Rejects: ${s.rejects} | Total: ${total}`;
+  document.getElementById('summary').innerText=
+    `Rows: ${rows.length} | Boards: ${total} | Per Row: ${s.perRow}`;
 }
 
 function resetAll(){
   step=1;
-
   document.getElementById('boards').value='';
   document.getElementById('metres').value='';
   document.getElementById('perRow').value='';
@@ -501,25 +446,14 @@ function resetAll(){
   modeSel.value='boards';
   bl.value='';
   yieldSel.value=1;
-
   clearGrid();
   updateUI();
 }
 
-modeSel.addEventListener('change',()=>{
-  step=1;
-  updateUI();
-  render();
-});
+modeSel.addEventListener('change',()=>{step=1;updateUI();render();});
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',()=>{updateUI();render();}));
 
-document.querySelectorAll('input,select')
-  .forEach(el=>el.addEventListener('input',()=>{
-    updateUI();
-    render();
-  }));
-
-updateUI();
-render();
+updateUI();render();
 </script>
 
 </body>
